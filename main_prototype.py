@@ -77,19 +77,3 @@ w.line(edge_list)
 w.field("COMMON_ID", 'C')
 w.record("Point")
 w.close()
-
-# Saving edges to file (OPTIONAL)
-# with open(edges_file, 'w') as edges_output:
-#     for r in edges:
-#         s = " ".join(map(str, r))
-#         edges_output.write(s+'\n')
-
-# Creating basemap to show the MST (NEEDS REWORKING)
-# map = Basemap(resolution = 'l', projection = 'merc', llcrnrlon = -110.6,
-# llcrnrlat = 15.58, urcrnrlon = -87.7, urcrnrlat = 27.7)
-# map.drawcoastlines()
-# map.drawcountries()
-# map.drawmapboundary()
-# x,y = map(lon,lat)
-# map.plot(x,y,'ro')
-# plt.title('Trazo individual')
