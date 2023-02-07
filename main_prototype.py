@@ -2,7 +2,6 @@ import csv
 import os
 import pandas as pd
 import numpy as np
-# from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 from vincenty import vincenty_inverse as vc
 import shapefile
