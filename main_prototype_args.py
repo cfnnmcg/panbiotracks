@@ -5,7 +5,6 @@ import csv
 import pandas as pd
 from vincenty import vincenty_inverse as vc
 import numpy as np
-from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import shapefile
 import adj_matrix
@@ -13,8 +12,9 @@ import prim
 
 # Define script arguments
 parser = argparse.ArgumentParser(description='input and output files.')
-parser.add_argument('csv_file')
-parser.add_argument('shp_file')
+parser.add_argument('csv_file', help="Input CSV file, with only two columns:"
+    "lat (Latitude) and lon (Longitude), in that order")
+parser.add_argument('shp_file', help="Location and name of the SHP output file")
 args = parser.parse_args()
 
 # Initialize variables
@@ -47,7 +47,7 @@ for i in range(len(df_list)):
         lo = tuple(df_list[j])
         adj_matrix.add_edge(i, j, vc(la, lo))
 
-# Prim function
+# Prim function to calculate MST
 print("\nDistancias mínimas:")
 prim.prim_algorithm(df.shape[0], adj_matrix.graph, edges)
 
@@ -78,19 +78,3 @@ w.line(edge_list)
 w.field("COMMON_ID", 'C')
 w.record("Point")
 w.close()
-
-# Create basemap
-# map = Basemap(resolution = 'l', projection = 'merc', llcrnrlon = -110.6,
-# llcrnrlat = 15.58, urcrnrlon = -87.7, urcrnrlat = 27.7)
-# map.drawcoastlines()
-# map.drawcountries()
-# map.drawmapboundary()
-# x,y = map(lon,lat)
-# map.plot(x,y,'ro')
-# plt.title('Trazo individual')
-
-# Saving edges to file
-# with open(edges_file, 'w') as edges_output:
-#     for r in edges:
-#         s = " ".join(map(str, r))
-#         edges_output.write(s+'\n')
