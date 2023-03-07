@@ -4,3 +4,7 @@ localities_reader.py
 .vscode/settings.json
 Pipfile
 Pipfile.lock
+Poetry.lock
+assets/
+outputs/
+jupyter/
