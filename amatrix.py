@@ -27,10 +27,10 @@ def add_edge(v1, v2, e):
     global vertices
     # Check if vertex v1 is a valid vertex
     if v1 not in vertices:
-        print("Vertex ", v1, " does no exists.")
+        print("Vertex ", v1, " does not exists.")
     # Check if vertex v2 is a valid vertex
     elif v2 not in vertices:
-        print("Vertex ", v2, " does no exists.")
+        print("Vertex ", v2, " does not exists.")
     else:
         index1 = vertices.index(v1)
         index2 = vertices.index(v2)

@@ -1,17 +1,18 @@
+#import argparse
 import geopandas as gp
 import pandas as pd
 import numpy as np
 import shapefile
 import matplotlib.pyplot as plt
-import adj_matrix
+import amatrix
 import prim
 from vincenty import vincenty_inverse as vc
 
 # Initialize variables
 shp_file = "./outputs/gentrack_devo_dou"
-adj_matrix.vertices = []
-adj_matrix.vertices_no = 0
-adj_matrix.graph = []
+amatrix.vertices = []
+amatrix.vertices_no = 0
+amatrix.graph = []
 edges = []
 edge_list = []
 
@@ -27,7 +28,7 @@ coords_list_df = coords_list_df[['lat', 'lon']]
 
 # Adding vertices
 for r in range(coords_list_df.shape[0]):
-    adj_matrix.add_vertex(r)
+    amatrix.add_vertex(r)
 
 # Adding edges and their weight (lenght)
 df_list = coords_list_df.values.tolist()
@@ -35,11 +36,11 @@ for i in range(len(df_list)):
     for j in range(len(df_list)):
         la = tuple(df_list[i])
         lo = tuple(df_list[j])
-        adj_matrix.add_edge(i, j, vc(la, lo))
+        amatrix.add_edge(i, j, vc(la, lo))
 
 # Prim function to calculate MST
 print("\nDistancias mínimas:")
-prim.prim_algorithm(coords_list_df.shape[0], adj_matrix.graph, edges)
+prim.prim_algorithm(coords_list_df.shape[0], amatrix.graph, edges)
 
 # Saving SHP
 # Making an array from the dataframe and loading graph edges
