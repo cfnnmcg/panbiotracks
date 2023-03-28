@@ -2,7 +2,7 @@ import geopandas as gp
 import pandas as pd
 import itertools as itt
 from vincenty import vincenty_inverse as vc
-from prim import prim_algorithm as pa
+from modules.prim import prim_algorithm as pa
 
 it1 = gp.read_file("../outputs/first_tests/c_alcoceri.shp")
 it2 = gp.read_file("../outputs/first_tests/c_hartwegii.shp")

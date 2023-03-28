@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from vincenty import vincenty_inverse as vc
 import shapefile
-import amatrix
-import prim
+import modules.amatrix as amatrix
+import modules.prim as prim
 
 # Initialize variables
 amatrix.vertices = []

@@ -7,8 +7,8 @@ from vincenty import vincenty_inverse as vc
 import numpy as np
 import matplotlib.pyplot as plt
 from shapefile import Writer
-import amatrix
-from prim import prim_algorithm as prim
+import modules.amatrix as amatrix
+from modules.prim import prim_algorithm as prim
 
 # Define script arguments
 parser = argparse.ArgumentParser(description='input and output files.')

@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 import shapefile
 import matplotlib.pyplot as plt
-import amatrix
-import prim
+import modules.amatrix as amatrix
+import modules.prim as prim
 from vincenty import vincenty_inverse as vc
 
 # Initialize variables
