@@ -1,3 +1,4 @@
+import argparse
 import sys
 import os
 import geopandas as gp
@@ -10,23 +11,29 @@ from vincenty import vincenty_inverse as vc
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.append(path)
 
-from modules.algorithms import prim_algorithm as primal, add_edge, add_vertex, nodes_intersect
+from modules.algorithms import (
+    prim_algorithm as primal, add_edge, add_vertex, nodes_intersect)
 from modules.shp_writer import shp_writer
 from modules import graph, edge_list, edges, coords_list
 
-it1 = gp.read_file("../outputs/first_tests/c_alcoceri.shp")
-it2 = gp.read_file("../outputs/first_tests/c_hartwegii.shp")
-it3 = gp.read_file("../outputs/first_tests/e_vestitum.shp")
-it4 = gp.read_file("../outputs/first_tests/m_iltisiana.shp")
+parser = argparse.ArgumentParser(description='Input and output files.')
+parser.add_argument('-i', '--input',
+                    dest='it_list',
+                    nargs='+',
+                    help='List of input SHP files. Needs at least 2.')
+parser.add_argument('-o', '--output',
+                    dest='shp_file',
+                    help="Location and name of the SHP output file, "
+                    "without file extension.")
+args = parser.parse_args()
 
-shp_file = ("../outputs/first_tests/gt_points/gt_alco_hart_vest")
+gp_it_list = []
 
-it_list = [it1, it2, it3, it4]
+for i in args.it_list:
+    k = gp.read_file(i)
+    gp_it_list.append(k)
 
-ls = [type(i) for i in it_list]
-print(ls)
-
-for a, b in itt.combinations(it_list, 2):
+for a, b in itt.combinations(gp_it_list, 2):
     nodes_list = nodes_intersect(a, b)
     nodes_coord_list = list(zip(nodes_list.x.astype(float),
         nodes_list.y.astype(float)))
@@ -67,4 +74,4 @@ for e in edges:
 edge_list = list(sorted(edge_list))
 
 # Saving the MST shapefile
-shp_writer(shp_file)
+shp_writer(args.shp_file)

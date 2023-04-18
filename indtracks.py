@@ -6,24 +6,23 @@ import pandas as pd
 from vincenty import vincenty_inverse as vc
 import numpy as np
 import matplotlib.pyplot as plt
-from shapefile import Writer
-import modules.amatrix as amatrix
-from modules.prim import prim_algorithm as prim
+from modules.amatrix import add_edge, add_vertex
+from modules.prim import prim_algorithm as primal
+from modules.shp_writer import shp_writer
+from modules import edge_list, edges, graph
 
 # Define script arguments
-parser = argparse.ArgumentParser(description='input and output files.')
-parser.add_argument('csv_file', help="Input CSV file, with only two columns:"
-    "lat (Latitude) and lon (Longitude), in that explicit order.")
-parser.add_argument('shp_file', help="Location and name of the SHP output"
-    "file, without extension.")
+parser = argparse.ArgumentParser(description='Input and output files.')
+parser.add_argument('-i', '--input',
+                    dest='csv_file',
+                    help="Input CSV file, with only two columns: "
+                    "lat (Latitude) and lon (Longitude), "
+                    "in that explicit order.")
+parser.add_argument('-o', '--output',
+                    dest='shp_file', 
+                    help="Location and name of the SHP output "
+                    "file, without extension.")
 args = parser.parse_args()
-
-# Initialize variables
-amatrix.vertices = []
-amatrix.vertices_no = 0
-amatrix.graph = []
-edges = []
-edge_list = []
 
 # Opening CSV file, deleting duplicate records and converting it to a dataframe
 with open(args.csv_file) as fo:
@@ -36,7 +35,7 @@ with open(args.csv_file) as fo:
 
 # Adding vertices
 for r in range(df.shape[0]):
-    amatrix.add_vertex(r)
+    add_vertex(r)
 
 # Adding edges and their weight (lenght)
 df_list = df.values.tolist()
@@ -44,11 +43,11 @@ for i in range(len(df_list)):
     for j in range(len(df_list)):
         la = tuple(df_list[i])
         lo = tuple(df_list[j])
-        amatrix.add_edge(i, j, vc(la, lo))
+        add_edge(i, j, vc(la, lo))
 
 # Prim function to calculate MST
 print("\nMinimal distances:")
-prim(df.shape[0], amatrix.graph, edges)
+primal(df.shape[0], graph, edges)
 
 # Saving SHP
 # Making an array from the dataframe and loading graph edges
@@ -66,8 +65,9 @@ for e in edges:
 edge_list = list(sorted(edge_list))
 
 # Saving the MST
-w = Writer(args.shp_file)
-w.line(edge_list)
-w.field("COMMON_ID", 'C')
-w.record("Point")
-w.close()
+# w = Writer(args.shp_file)
+# w.line(edge_list)
+# w.field("COMMON_ID", 'C')
+# w.record("Point")
+# w.close()
+shp_writer(args.shp_file)

@@ -1,20 +1,22 @@
+from modules import graph, vertices_n, vertices
+
 def add_vertex(v):
     """
     Adds vertices to an adjacency matrix, as many as locations are in the CSV.
     """
     global graph
-    global vertices_no
+    global vertices_n
     global vertices
     if v in vertices:
         print("Vertex ", v, "already exists.")
     else:
-        vertices_no = vertices_no + 1
+        vertices_n = vertices_n + 1
         vertices.append(v)
-        if vertices_no > 1:
+        if vertices_n > 1:
             for vertex in graph:
                 vertex.append(0)
         temp = []
-        for i in range(vertices_no):
+        for i in range(vertices_n):
             temp.append(0)
         graph.append(temp)
 
@@ -23,7 +25,7 @@ def add_edge(v1, v2, e):
     Adds edges and their weight (lenght) to the adjacency matrix.
     """
     global graph
-    global vertices_no
+    global vertices_n
     global vertices
     # Check if vertex v1 is a valid vertex
     if v1 not in vertices:
