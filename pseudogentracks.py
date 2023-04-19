@@ -35,8 +35,10 @@ for i in args.it_list:
 
 for a, b in itt.combinations(gp_it_list, 2):
     nodes_list = nodes_intersect(a, b)
+    print(nodes_list)
     nodes_coord_list = list(zip(nodes_list.x.astype(float),
         nodes_list.y.astype(float)))
+    print(nodes_coord_list)
     coords_list = [*coords_list, *nodes_coord_list]
  
 coords_list_df = pd.DataFrame(coords_list, columns=['lon', 'lat'])
