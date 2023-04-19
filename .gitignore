@@ -1,10 +1,3 @@
-antimeridian_test.py
-geo_dist_approximations.py
-localities_reader.py
 .vscode/settings.json
 assets/
 outputs/
-jupyter/
-adj_matrix.cpython-310.pyc
-prim.cpython-310.pyc
-poetry.lock
