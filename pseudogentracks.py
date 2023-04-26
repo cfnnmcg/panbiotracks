@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import sys
 import os
@@ -35,12 +37,13 @@ for i in args.it_list:
 
 for a, b in itt.combinations(gp_it_list, 2):
     nodes_list = nodes_intersect(a, b)
-    print(nodes_list)
-    nodes_coord_list = list(zip(nodes_list.x.astype(float),
-        nodes_list.y.astype(float)))
-    print(nodes_coord_list)
-    coords_list = [*coords_list, *nodes_coord_list]
- 
+    if len(nodes_list[~nodes_list.is_empty]) == 0:
+        continue
+    else:
+        nodes_coord_list = list(zip(nodes_list.geometry.x.astype(float),
+            nodes_list.geometry.y.astype(float)))
+        coords_list = [*coords_list, *nodes_coord_list]
+
 coords_list_df = pd.DataFrame(coords_list, columns=['lon', 'lat'])
 coords_list_df = coords_list_df[['lat', 'lon']]
 
