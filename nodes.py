@@ -25,12 +25,13 @@ parser.add_argument('-o', '--output',
                     "without file extension.")
 args = parser.parse_args()
 
+# Global list of generalized tracks
 gt_gp_list = []
-
 for i in args.gt_shp_list:
     k = gp.read_file(i)
     gt_gp_list.append(k)
 
+# Finding intersections
 for a, b in itt.combinations(gt_gp_list, 2):
     nodes_list = ni(a, b)
     if len(nodes_list[~nodes_list.is_empty]) == 0:
@@ -40,14 +41,14 @@ for a, b in itt.combinations(gt_gp_list, 2):
             nodes_list.geometry.y.astype(float)))
         coords_list = [*coords_list, *nodes_coord_list]
 
+# Making list of coordinates
 coords_list_df = pd.DataFrame(coords_list, columns=['lon', 'lat'])
-#coords_list_df = coords_list_df[['lat', 'lon']]
-
 coords_list_df['geometry'] = (coords_list_df.apply
                                 (lambda x: Point(x.lon, x.lat), axis=1))
 coords_list_df = coords_list_df.drop(['lon', 'lat'], axis=1)
-coords_list_gdf = gp.GeoDataFrame(coords_list_df)
 
+# Saving SHP output file
+coords_list_gdf = gp.GeoDataFrame(coords_list_df)
 coords_list_gdf.to_file(args.shp_file)
 
 #Buscar intersección
