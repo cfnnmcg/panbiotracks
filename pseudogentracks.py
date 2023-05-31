@@ -35,7 +35,7 @@ for i in args.it_list:
     gp_it_list.append(k)
 
 # Making intersections
-for a, b in itt.combinations(gp_it_list, 2):
+for a, b in itt.combinations(gp_it_list, 2): # type: ignore
     nodes_list = nodes_intersect(a, b)
     if len(nodes_list[~nodes_list.is_empty]) == 0:
         continue

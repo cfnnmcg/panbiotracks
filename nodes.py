@@ -32,14 +32,17 @@ for i in args.gt_shp_list:
     gt_gp_list.append(k)
 
 # Finding intersections
-for a, b in itt.combinations(gt_gp_list, 2):
+for a, b in itt.combinations(gt_gp_list, 2): # type: ignore
     nodes_list = ni(a, b)
+    print(nodes_list)
     if len(nodes_list[~nodes_list.is_empty]) == 0:
         continue
     else:
         nodes_coord_list = list(zip(nodes_list.geometry.x.astype(float),
             nodes_list.geometry.y.astype(float)))
         coords_list = [*coords_list, *nodes_coord_list]
+
+print(coords_list)
 
 # Making list of coordinates
 coords_list_df = pd.DataFrame(coords_list, columns=['lon', 'lat'])
@@ -49,7 +52,7 @@ coords_list_df = coords_list_df.drop(['lon', 'lat'], axis=1)
 
 # Saving SHP output file
 coords_list_gdf = gp.GeoDataFrame(coords_list_df)
-coords_list_gdf.to_file(args.shp_file)
+coords_list_gdf.to_file(args.shp_file, driver='ESRI Shapefile') # type: ignore
 
 #Buscar intersección
 # def find_nodes(t1, t2, filename):
