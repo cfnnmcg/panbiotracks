@@ -1,5 +1,6 @@
-.vscode/settings.json
+.vscode/
 assets/
 outputs/
 jupyter/
 test/
+**/__pycache__/
