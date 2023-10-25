@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "panbiotracks"
+name = "Panbiotracks"
 version = "0.1.0"
-description = "A small program to do track analysis."
+description = "A program to do track analysis for panbiogeography."
 authors = ["Carlos Fernando Castillo <cfcastillo@tutanota.com>"]
 readme = "README.md"
 
