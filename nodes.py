@@ -11,7 +11,7 @@ from shapely.geometry import Point
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.append(path)
 
-from modules.algorithms import nodes_intersect as ni
+from modules.functions import nodes_intersect as ni
 from modules import coords_list
 
 parser = argparse.ArgumentParser(description='Input and output files.')

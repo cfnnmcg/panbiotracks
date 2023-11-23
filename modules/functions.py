@@ -1,4 +1,6 @@
 from modules import graph, vertices_n, vertices
+from shapefile import Writer
+from modules import edge_list
 
 def add_vertex(v):
     """
@@ -73,3 +75,14 @@ def nodes_intersect(n1, n2):
     internodes = n1.intersection(n2)
     inex = internodes.explode(index_parts = True)
     return inex
+
+def shp_writer(f):
+    '''
+    A simple function that uses a list of edges to write a SHP file.
+    '''
+    global edge_list
+    w = Writer(f)
+    w.line(edge_list)
+    w.field("COMMON_ID", 'C')
+    w.record("Point")
+    w.close()

@@ -12,9 +12,10 @@ from vincenty import vincenty_inverse as vc
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.append(path)
 
-from modules.algorithms import (
-    prim_algorithm as prim, add_edge, add_vertex, nodes_intersect)
-from modules.shp_writer import shp_writer
+from modules.functions import (
+    prim_algorithm as prim, add_edge, add_vertex, nodes_intersect,
+    shp_writer)
+#from modules.shp_writer import shp_writer
 from modules import graph, edge_list, edges, coords_list
 
 parser = argparse.ArgumentParser(description='Input and output files.')

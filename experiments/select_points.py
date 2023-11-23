@@ -10,7 +10,7 @@ from shapely.geometry import Point
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.append(path)
 
-from modules.algorithms import (
+from modules.functions import (
     prim_algorithm as prim, add_edge, add_vertex)
 from modules.shp_writer import shp_writer
 from modules import graph, edge_list, edges

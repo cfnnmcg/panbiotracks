@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 
+import os
+import sys
 import argparse
 import pandas as pd
 from vincenty import vincenty_inverse as vc
 import numpy as np
-from modules.amatrix import add_edge, add_vertex
-from modules.prim import prim_algorithm as prim
-from modules.shp_writer import shp_writer
+
+path = os.path.join(os.path.dirname(__file__), os.pardir)
+sys.path.append(path)
+
+# from modules.amatrix import add_edge, add_vertex
+# from modules.prim import prim_algorithm as prim
+# from modules.shp_writer import shp_writer
+from modules.functions import (add_edge, add_vertex, prim_algorithm as prim,
+                               shp_writer)
 from modules import edge_list, edges, graph
 
 # Define script arguments
