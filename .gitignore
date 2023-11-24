@@ -2,7 +2,7 @@
 assets/
 outputs/
 jupyter/
-test/
+experiments/
 #**/__pycache__/
 # Byte-compiled / optimized / DLL files
 __pycache__/
