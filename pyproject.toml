@@ -11,23 +11,12 @@ vincenty = "^0.1.4"
 numpy = "^1.24.2"
 pandas = "^1.5.3"
 pyshp = "^2.3.1"
-matplotlib = "^3.7.0"
 fiona = "^1.9.1"
 shapely = "^2.0.1"
 geopandas = "^0.12.2"
 ogr = "^0.44.0"
 gdal = "^3.6.2"
 rdp = "^0.8"
-
-
-[tool.poetry.group.dev.dependencies]
-ipykernel = "^6.21.3"
-
-
-[tool.poetry.group.test.dependencies]
-scipy = "^1.10.1"
-pybind11-rdp = "^0.1.3"
-simplification = "^0.6.11"
 
 [build-system]
 requires = ["poetry-core"]

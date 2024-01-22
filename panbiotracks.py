@@ -5,8 +5,10 @@
 import sys
 import os
 import argparse
-import pandas as pd
-import geopandas as gp
+# import pandas as pd
+from pandas import read_csv as pdrcsv, DataFrame as pddf
+# import geopandas as gp
+from geopandas import read_file as gprf, GeoDataFrame as gpgdf
 import numpy as np
 import itertools as itt
 from vincenty import vincenty_inverse as vc
@@ -48,7 +50,7 @@ if args.mode == 'I':
     # Opening CSV file and deleting duplicate records
     for i in args.input:
         with open(i) as fo:
-            df = pd.read_csv(fo, header=0, dtype={'lat': float, 'lon': float})
+            df = pdrcsv(fo, header=0, dtype={'lat': float, 'lon': float})
             df.drop_duplicates(inplace=True)
 
         # Adding vertices
@@ -79,11 +81,11 @@ if args.mode == 'I':
         # Saving the MST to a SHP file
         shpw(args.shp_file)
 elif args.mode == 'P':
-    # Pseudo-Generalized Tracks method
+    # Internal Generalized Tracks method
     # Global list of input files' paths
     gp_it_list = []
     for i in args.input:
-        k = gp.read_file(i)
+        k = gprf(i)
         gp_it_list.append(k)
 
     # Making intersections
@@ -97,7 +99,7 @@ elif args.mode == 'P':
             coords_list = [*coords_list, *nodes_coord_list]
 
     # Making dataframe
-    coords_list_df = pd.DataFrame(coords_list, columns=['lon', 'lat'])
+    coords_list_df = pddf(coords_list, columns=['lon', 'lat'])
     coords_list_df = coords_list_df[['lat', 'lon']]
 
     # Adding vertices
@@ -132,7 +134,7 @@ elif args.mode == 'N':
     # Global list of generalized tracks
     gt_gp_list = []
     for i in args.input:
-        k = gp.read_file(i)
+        k = gprf(i)
         gt_gp_list.append(k)
 
     # Finding intersections
@@ -149,13 +151,13 @@ elif args.mode == 'N':
     print(coords_list)
 
     # Making list of coordinates
-    coords_list_df = pd.DataFrame(coords_list, columns=['lon', 'lat'])
+    coords_list_df = pddf(coords_list, columns=['lon', 'lat'])
     coords_list_df['geometry'] = (coords_list_df.apply
                                     (lambda x: Point(x.lon, x.lat), axis=1))
     coords_list_df = coords_list_df.drop(['lon', 'lat'], axis=1)
 
     # Saving SHP output file
-    coords_list_gdf = gp.GeoDataFrame(coords_list_df)
+    coords_list_gdf = gpgdf(coords_list_df)
     coords_list_gdf.to_file(args.shp_file, driver='ESRI Shapefile') # type: ignore
 else:
     print(f"{args.mode} is not a valid option. Please use 'I', 'P' or 'N'.")
