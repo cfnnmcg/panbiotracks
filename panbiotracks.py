@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 
 # Panbiotracks v. 0.1.0
+# (c) Carlos Fernando Castillo-García, Universidad Nacional Autónoma de México
+# 2023-2024
+
+# This program was made as a fulfillment of the author for obtaining a 
+# M.Sc. degree in the Posgrado en Ciencias Biológicas, 
+# Universidad Nacional Autónoma de México, Mexico. 
+# The author thanks the Consejo Nacional de Humanidades, 
+# Ciencias y Tecnologías (CONAHCyT) for the support of this research through 
+# a graduate scholarship.
 
 import sys
 import os
