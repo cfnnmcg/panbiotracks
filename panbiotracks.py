@@ -62,11 +62,11 @@ if args.mode == 'I':
             df = pdrcsv(fo, header=0, dtype={'lat': float, 'lon': float})
             df.drop_duplicates(inplace=True)
 
-        # Adding vertices
+        # Adding vertices to the adjacency matrix
         for r in range(df.shape[0]):
             add_vertex(r)
 
-        # Adding edges and their weight (lenght)
+        # Adding edges and their weight (lenght) to the adjacency matrix
         df_list = df.values.tolist()
         for i in range(len(df_list)):
             for j in range(len(df_list)):
