@@ -36,12 +36,10 @@ parser = argparse.ArgumentParser(description='Options, input, output files.')
 parser.add_argument('-m', '--mode',
                     choices=['I', 'P', 'N'],
                     help="Select the operation mode: 'I' generates individual "
-                    "tracks. 'P' generates pseudo-generalized tracks. "
+                    "tracks. 'P' generates internal generalized tracks. "
                     "'N' generates nodes.")
 parser.add_argument('-i', '--input',
                     nargs='+',
-                    # dest='csv_file',
-                    # action='append',
                     help="Input file or files. "
                     "If '-m I', it needs to be a single CSV file "
                     "with three columns: species, lat (Latitude) and "
@@ -52,11 +50,11 @@ parser.add_argument('-o', '--output',
                     dest='shp_file', 
                     help="Location and name of the SHP output "
                     "file, without extension. If '-m I', it's the "
-                    "directory where the files will be saved.")
+                    "directory where the output files will be saved.")
 args = parser.parse_args()
 
 if args.mode == 'I':
-    # Individual Tracks method
+    # INDIVIDUAL TRACKS METHOD
     # Opening CSV file and deleting duplicate records
     for i in args.input:
         with open(i) as fo:
@@ -64,19 +62,21 @@ if args.mode == 'I':
             df.drop_duplicates(inplace=True)
             list_df = [g for n,g in df.groupby('species')]
 
+        # Iterating over each dataframe:
         for dfi in list_df:
 
+            # Clearing all lists:
             graph.clear()
             vertices.clear()
             edges.clear()
             edge_list.clear()
             coords_list.clear()
 
-            # Adding vertices to the adjacency matrix
-            for r in range(df.shape[0]):
+            # Adding vertices to the adjacency matrix:
+            for r in range(dfi.shape[0]):
                 add_vertex(r)
 
-            # Adding edges and their weight (lenght) to the adjacency matrix
+            # Adding edges and their weight (lenght) to the adjacency matrix:
             df_list = dfi[['lat', 'lon']].values.tolist()
             for i in range(len(df_list)):
                 for j in range(len(df_list)):
@@ -88,7 +88,7 @@ if args.mode == 'I':
             print(f"\n{dfi['species'].loc[dfi.index[0]]} - Minimal distances:")
             prim(dfi.shape[0], graph, edges)
 
-            # Making tuples of points to trace edges.
+            # Making tuples of points to trace edges:
             coords = dfi.to_numpy()
             edges_np = np.array(edges, dtype=np.int32)
             for e in edges_np:
@@ -96,12 +96,13 @@ if args.mode == 'I':
                 edge_list.append([(coords[i, 2], coords[i, 1]),
                 (coords[j, 2], coords[j, 1])])
 
-            # Saving the MST to a SHP file
+            # Saving the MST to a SHP file:
             filename = dfi['species'].loc[dfi.index[0]]
             shpw(f"{args.shp_file}/{filename}")
+            print(f"The track was saved to {args.shp_file}/{filename}.shp")
             print("\nEND")
 elif args.mode == 'P':
-    # Internal Generalized Tracks method
+    # INTERNAL GENERALIZED TRACKS METHOD
     # Global list of input files' paths
     gp_it_list = []
     for i in args.input:
@@ -149,8 +150,9 @@ elif args.mode == 'P':
 
     # Saving the MST shapefile
     shpw(args.shp_file)
+    print("\nEND")
 elif args.mode == 'N':
-    # Nodes method
+    # NODES METHOD
     # Global list of generalized tracks
     gt_gp_list = []
     for i in args.input:
@@ -179,5 +181,6 @@ elif args.mode == 'N':
     # Saving SHP output file
     coords_list_gdf = gpgdf(coords_list_df)
     coords_list_gdf.to_file(args.shp_file, driver='ESRI Shapefile') # type: ignore
+    print("\nEND")
 else:
     print(f"{args.mode} is not a valid option. Please use 'I', 'P' or 'N'.")
