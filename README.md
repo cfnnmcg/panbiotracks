@@ -1,6 +1,6 @@
 # Panbiotracks
 
-Is a program to do tracks analysis, Léon Croizat's geometrical approach to biogeography. Currently, it generates individual tracks, internal generalized tracks and generalized nodes.
+A program to do tracks analysis, Léon Croizat's geometrical approach to biogeography. Currently, it generates individual tracks, internal generalized tracks and generalized nodes.
 
 It has three main functions:
 
@@ -10,13 +10,41 @@ It has three main functions:
 
 ## Basic usage
 
+### Input files
+
+#### Individual tracks
+
+A comma-separated file (CSV) with three columns/headers: **species**, **lat** and **lon**, in that order. A single file can contain data from multiple species. Latitude and longitude data must be in decimal degrees.
+
+```csv
+species,lat,lon
+Pinus arizonica,24.983,-105.883
+Pinus arizonica,23.423,-104.26
+Pinus aristata,36.2942,-105.246
+Pinus aristata,38.183333,-106.207222
+```
+
+#### Internal generalized tracks
+
+A set of SHP files, each one containing an individual track. There must be at least two of them, separated by a space:
+
+```console
+/home/user/shapefile1.shp /home/user/shapefile2.shp
+```
+
+The file paths can be relative or absolute.
+
+#### Nodes
+
+A set of SHP files, each one containing an internal generalized track. There must be at least two of them, separated by a space. The file paths can be relative or absolute.
+
 ### Individual Tracks
 
 ```console
-panbiotracks -m I -i [LIST_OF_LOCATIONS.csv] -o [OUTPUT_FILE]
+panbiotracks -m I -i [LIST_OF_SPECIES_LOCATIONS.csv] -o [OUTPUT_DIRECTORY]
 ```
 
-Where **LIST_OF_LOCATIONS.csv** is a single CSV file with a list of locations represented by a pair of coordinates each one and a header. The **latitude** must be in the first column and the **longitude** in the second column. **OUTPUT_FILE** is the name of the output SHP file, **without** file extension.
+Where **LIST_OF_SPECIES_LOCATIONS.csv** is a single CSV file with a list of species locations represented by a pair of coordinates, like specified in "Input files". **OUTPUT_DIRECTORY** is the name of the directory (folder) where the SHP output files will be saved. This directory can be an existing one or you can write a new name, in which case *Panbiotracks* will create a new directory with that name. If there are data of multiple species in the input CSV file, *Panbiotracks* will generate a SHP file for each of them, named after the data present in the `species` column.
 
 ### Internal Generalized Tracks
 
@@ -39,6 +67,7 @@ Where **FILE_n.shp** are the ESRI shape files that contain the tracks that will 
 - Refactor the program to generate generalized tracks and nodes that are more faithful to their formal definition.
 - Improve speed and usability.
 - Improve the algorithms used.
+- Add GeoJSON as an alternative save file format.
 
 ## Acknowledgements
 

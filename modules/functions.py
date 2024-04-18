@@ -9,6 +9,7 @@ def add_vertex(v):
     global graph
     global vertices_n
     global vertices
+
     if v in vertices:
         print("Vertex ", v, "already exists.")
     else:
@@ -48,7 +49,7 @@ def prim_algorithm(V, graph, edges_list):
     selected = [0 for value in range(V)]
     no_edge = 0
     selected[0] = True
-    print("Arista : Distancia (km)")
+    print("Edge : Lenght (km)")
     while (no_edge < V - 1):
         minimum = INF
         x = 0

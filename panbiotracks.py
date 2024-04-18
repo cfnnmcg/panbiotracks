@@ -15,7 +15,7 @@ import sys
 import os
 import argparse
 # import pandas as pd
-from pandas import read_csv as pdrcsv, DataFrame as pddf
+from pandas import read_csv as pdreadcsv, DataFrame as pddf
 # import geopandas as gp
 from geopandas import read_file as gprf, GeoDataFrame as gpgdf
 import numpy as np
@@ -29,7 +29,7 @@ sys.path.append(path)
 from modules.functions import (
     add_vertex, add_edge, prim_algorithm as prim, shp_writer as shpw,
     nodes_intersect as ni)
-from modules import graph, edge_list, edges, coords_list
+from modules import graph, edge_list, edges, coords_list, vertices
 
 # Define script arguments
 parser = argparse.ArgumentParser(description='Options, input, output files.')
@@ -44,14 +44,15 @@ parser.add_argument('-i', '--input',
                     # action='append',
                     help="Input file or files. "
                     "If '-m I', it needs to be a single CSV file "
-                    "with only two columns: lat (Latitude) and "
+                    "with three columns: species, lat (Latitude) and "
                     "lon (Longitude), in that explicit order.\n"
-                    "If '-m P' or '-m N', it must be a list of at least two "
+                    "If '-m P' or '-m N', it must be a set of at least two "
                     "SHP files.")
 parser.add_argument('-o', '--output',
                     dest='shp_file', 
                     help="Location and name of the SHP output "
-                    "file, without extension.")
+                    "file, without extension. If '-m I', it's the "
+                    "directory where the files will be saved.")
 args = parser.parse_args()
 
 if args.mode == 'I':
@@ -59,36 +60,46 @@ if args.mode == 'I':
     # Opening CSV file and deleting duplicate records
     for i in args.input:
         with open(i) as fo:
-            df = pdrcsv(fo, header=0, dtype={'lat': float, 'lon': float})
+            df = pdreadcsv(fo, header=0, dtype={'lat': float, 'lon': float})
             df.drop_duplicates(inplace=True)
+            list_df = [g for n,g in df.groupby('species')]
 
-        # Adding vertices to the adjacency matrix
-        for r in range(df.shape[0]):
-            add_vertex(r)
+        for dfi in list_df:
 
-        # Adding edges and their weight (lenght) to the adjacency matrix
-        df_list = df.values.tolist()
-        for i in range(len(df_list)):
-            for j in range(len(df_list)):
-                la = tuple(df_list[i])
-                lo = tuple(df_list[j])
-                add_edge(i, j, vc(la, lo))
+            graph.clear()
+            vertices.clear()
+            edges.clear()
+            edge_list.clear()
+            coords_list.clear()
 
-        # Prim function to calculate MST
-        print("\nMinimal distances:")
-        prim(df.shape[0], graph, edges)
+            # Adding vertices to the adjacency matrix
+            for r in range(df.shape[0]):
+                add_vertex(r)
 
-        # Making tuples of points to trace edges.
-        coords = df.to_numpy()
-        edges = np.array(edges, dtype=np.int32)
-        for e in edges:
-            i, j = e
-            edge_list.append([(coords[i, 1], coords[i, 0]),
-            (coords[j, 1], coords[j, 0])])
-        edge_list = list(sorted(edge_list))
+            # Adding edges and their weight (lenght) to the adjacency matrix
+            df_list = dfi[['lat', 'lon']].values.tolist()
+            for i in range(len(df_list)):
+                for j in range(len(df_list)):
+                    la = tuple(df_list[i])
+                    lo = tuple(df_list[j])
+                    add_edge(i, j, vc(la, lo))
 
-        # Saving the MST to a SHP file
-        shpw(args.shp_file)
+            # Prim function to calculate MST
+            print(f"\n{dfi['species'].loc[dfi.index[0]]} - Minimal distances:")
+            prim(dfi.shape[0], graph, edges)
+
+            # Making tuples of points to trace edges.
+            coords = dfi.to_numpy()
+            edges_np = np.array(edges, dtype=np.int32)
+            for e in edges_np:
+                i, j = e
+                edge_list.append([(coords[i, 2], coords[i, 1]),
+                (coords[j, 2], coords[j, 1])])
+
+            # Saving the MST to a SHP file
+            filename = dfi['species'].loc[dfi.index[0]]
+            shpw(f"{args.shp_file}/{filename}")
+            print("\nEND")
 elif args.mode == 'P':
     # Internal Generalized Tracks method
     # Global list of input files' paths
@@ -124,7 +135,7 @@ elif args.mode == 'P':
             add_edge(i, j, vc(la, lo))
 
     # Prim function to calculate MST
-    print("\nDistancias mínimas:")
+    print("\nMinimal distances:")
     prim(coords_list_df.shape[0], graph, edges)
 
     # Making tuples of points to trace edges.
