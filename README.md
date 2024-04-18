@@ -1,12 +1,18 @@
 # Panbiotracks
 
-A program to do tracks analysis, Léon Croizat's geometrical approach to biogeography. Currently, it generates individual tracks, internal generalized tracks and generalized nodes.
+A program to do tracks analysis, Léon Croizat's geometrical approach to biogeography (Croizat, 1958). Currently, it can build individual tracks, internal generalized tracks and generalized nodes, as described in the accompanying article (*in development*).
 
 It has three main functions:
 
 - It builds an individual track from a list of locations in a comma-separated file (CSV) and saves the result to an ESRI shape file (SHP).
-- It builds a pseudo-generalized track from a set of individual tracks and saves the result to an ESRI shape file (SHP).
-- It identifies the intersections between a set of generalized tracks and marks each as a node, then saves the result to an ESRI shape file (SHP).
+- It builds an internal generalized track (IGT) from a set of individual tracks and saves the result to an ESRI shape file (SHP).
+- It identifies the intersections between a set of generalized tracks and marks each one as a node, then saves the result to an ESRI shape file (SHP).
+
+## Download and installation
+
+*Panbiotracks* is a self-contained executable that can be run as is, without installing it. To get it, go to the [Releases page](https://github.com/cfnnmcg/panbiotracks/releases) and download the right file according to your operating system. If the file is in compressed format, unpack it before use.
+
+Once downloaded, go to the directory where you saved the executable and open it from a terminal window, like GNOME terminal or Windows PowerShell.
 
 ## Basic usage
 
@@ -68,6 +74,10 @@ Where **FILE_n.shp** are the ESRI shape files that contain the tracks that will 
 - Improve speed and usability.
 - Improve the algorithms used.
 - Add GeoJSON as an alternative save file format.
+
+## References
+
+- Croizat, L.1958. Panbiogeography. Vols. 1 y 2. Published by the author, Caracas.
 
 ## Acknowledgements
 
