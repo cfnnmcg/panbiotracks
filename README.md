@@ -82,3 +82,7 @@ Where **FILE_n.shp** are the ESRI shape files that contain the tracks that will 
 ## Acknowledgements
 
 This program was made as a fulfillment of the author for obtaining a M.Sc. degree in the Posgrado en Ciencias Biológicas, Universidad Nacional Autónoma de México, Mexico. The author thanks the Consejo Nacional de Humanidades, Ciencias y Tecnologías (CONAHCyT) for the support of this research through a graduate scholarship.
+
+## How to cite
+
+**The accompanying paper is currently in process of revision and waiting to be published.**
