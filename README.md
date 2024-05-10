@@ -16,6 +16,16 @@ Once downloaded, go to the directory where you saved the executable and open it 
 
 ## Basic usage
 
+```console
+panbiotracks -m MODE -i INPUT_FILE(S) -o OUTPUT_FILE_OR_DIRECTORY
+```
+
+To see the basic help, type:
+
+```console
+panbiotracks -h
+```
+
 ### Input files
 
 #### Individual tracks
