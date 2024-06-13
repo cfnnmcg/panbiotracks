@@ -13,10 +13,12 @@ pandas = "^1.5.3"
 pyshp = "^2.3.1"
 fiona = "^1.9.1"
 shapely = "^2.0.1"
-geopandas = "^0.12.2"
+geopandas = "^0.14.0"
 ogr = "^0.44.0"
 gdal = "3.7.*"
 rdp = "^0.8"
+
+[tool.poetry.group.dev.dependencies]
 
 [build-system]
 requires = ["poetry-core"]

@@ -73,8 +73,9 @@ def nodes_intersect(n1, n2):
     This function checks for all of the intersection points between 2 individual
     tracks and returns a list of coordinates of such points.
     '''
-    internodes = n1.intersection(n2)
-    inex = internodes.explode(index_parts = True)
+    internodes = n1.intersection(n2)    
+    inex = internodes.extract_unique_points().explode(
+        index_parts = True).droplevel(0)
     return inex
 
 def shp_writer(f):

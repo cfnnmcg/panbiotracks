@@ -101,6 +101,7 @@ if args.mode == 'I':
             shpw(f"{args.shp_file}/{filename}")
             print(f"The track was saved to {args.shp_file}/{filename}.shp")
             print("\nEND")
+
 elif args.mode == 'P':
     # INTERNAL GENERALIZED TRACKS METHOD
     # Global list of input files' paths
@@ -108,6 +109,9 @@ elif args.mode == 'P':
     for i in args.input:
         k = gprf(i)
         gp_it_list.append(k)
+
+    #print(f"\nLista gp_it_list")
+    #print(gp_it_list)
 
     # Making intersections
     for a, b in itt.combinations(gp_it_list, 2): # type: ignore
@@ -150,7 +154,9 @@ elif args.mode == 'P':
 
     # Saving the MST shapefile
     shpw(args.shp_file)
+    print(f"\nThe track was saved to {args.shp_file}.shp")
     print("\nEND")
+
 elif args.mode == 'N':
     # NODES METHOD
     # Global list of generalized tracks
@@ -181,6 +187,8 @@ elif args.mode == 'N':
     # Saving SHP output file
     coords_list_gdf = gpgdf(coords_list_df)
     coords_list_gdf.to_file(args.shp_file, driver='ESRI Shapefile') # type: ignore
+    print(f"\nThe track was saved to {args.shp_file}.shp")
     print("\nEND")
+
 else:
-    print(f"{args.mode} is not a valid option. Please use 'I', 'P' or 'N'.")
+    print(f"{args.mode} is not a valid option. Please use '-m I', '-m P' or '-m N', or type 'panbiotracks -h' for help.")
