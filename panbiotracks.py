@@ -163,7 +163,7 @@ elif args.mode == 'N':
     for i in args.input:
         if glob.escape(i) != i:
             gt_gp_list.extend(glob.glob(i))
-        else
+        else:
             k = gprf(i)
             gt_gp_list.append(k)
 
