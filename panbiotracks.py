@@ -14,9 +14,8 @@
 import sys
 import os
 import argparse
-# import pandas as pd
+import glob
 from pandas import read_csv as pdreadcsv, DataFrame as pddf
-# import geopandas as gp
 from geopandas import read_file as gprf, GeoDataFrame as gpgdf
 import numpy as np
 import itertools as itt
@@ -107,11 +106,11 @@ elif args.mode == 'P':
     # Global list of input files' paths
     gp_it_list = []
     for i in args.input:
-        k = gprf(i)
-        gp_it_list.append(k)
-
-    #print(f"\nLista gp_it_list")
-    #print(gp_it_list)
+        if glob.escape(i) != i:
+            gp_it_list.extend(glob.glob(i))
+        else:
+            k = gprf(i)
+            gp_it_list.append(k)
 
     # Making intersections
     for a, b in itt.combinations(gp_it_list, 2): # type: ignore
@@ -162,8 +161,11 @@ elif args.mode == 'N':
     # Global list of generalized tracks
     gt_gp_list = []
     for i in args.input:
-        k = gprf(i)
-        gt_gp_list.append(k)
+        if glob.escape(i) != i:
+            gt_gp_list.extend(glob.glob(i))
+        else
+            k = gprf(i)
+            gt_gp_list.append(k)
 
     # Finding intersections
     for a, b in itt.combinations(gt_gp_list, 2): # type: ignore
@@ -191,4 +193,5 @@ elif args.mode == 'N':
     print("\nEND")
 
 else:
-    print(f"{args.mode} is not a valid option. Please use '-m I', '-m P' or '-m N', or type 'panbiotracks -h' for help.")
+    print(
+        f"{args.mode} is not a valid option. Please use '-m I', '-m P' or '-m N', or type 'panbiotracks -h' for help.")
