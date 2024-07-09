@@ -17,6 +17,7 @@ geopandas = "^0.14.0"
 ogr = "^0.44.0"
 gdal = "3.7.*"
 rdp = "^0.8"
+pyinstaller = "^6.8.0"
 
 [tool.poetry.group.dev.dependencies]
 
