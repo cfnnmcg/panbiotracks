@@ -45,6 +45,10 @@ parser.add_argument('-i', '--input',
                     "lon (Longitude), in that explicit order.\n"
                     "If '-m P' or '-m N', it must be a set of at least two "
                     "SHP files.")
+parser.add_argument('-p', '--path',
+                    metavar="path",
+                    type=str,
+                    )
 parser.add_argument('-o', '--output',
                     dest='shp_file', 
                     help="Location and name of the SHP output "
@@ -109,8 +113,10 @@ elif args.mode == 'P':
         if glob.escape(i) != i:
             gp_it_list.extend(glob.glob(i))
         else:
-            k = gprf(i)
+            k = gprf(glob.glob(i))
             gp_it_list.append(k)
+
+    print(gp_it_list)
 
     # Making intersections
     for a, b in itt.combinations(gp_it_list, 2): # type: ignore
