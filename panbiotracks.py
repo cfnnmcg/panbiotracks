@@ -50,6 +50,10 @@ parser.add_argument('-o', '--output',
                     help="Location and name of the SHP output file, without "
                     "file extension. If '-m I', it must be the path to the "
                     "directory where the output files will be saved to.")
+parser.add_argument('-v', '--version',
+                    action='version',
+                    version='0.2.3',
+                    help="Displays program version and exits.")
 args = parser.parse_args()
 
 if args.mode == 'I':
@@ -189,6 +193,9 @@ elif args.mode == 'N':
     coords_list_gdf.to_file(args.shp_file, driver='ESRI Shapefile') # type: ignore
     print(f"\nGeneralized nodes were saved to {args.shp_file}.shp")
     print("\nEND")
+
+elif args.version:
+    print("Panbiotracks 0.2.3")
 
 else:
     print(f"{args.mode} is not a valid option. Please use '-m I', "
