@@ -70,7 +70,7 @@ def prim_algorithm(V, graph, edges_list):
 
 def nodes_intersect(n1, n2):
     '''
-    This function checks for all of the intersection points between 2 individual
+    Checks for all of the intersection points between 2 individual
     tracks and returns a list of coordinates of such points.
     '''
     internodes = n1.intersection(n2)    

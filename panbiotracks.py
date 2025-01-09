@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Panbiotracks v. 0.1.0
+# Panbiotracks v. 0.2.3
 # (c) Carlos Fernando Castillo-García, Universidad Nacional Autónoma de México
 # 2023-2024
 
@@ -34,26 +34,22 @@ from modules import graph, edge_list, edges, coords_list, vertices
 parser = argparse.ArgumentParser(description='Options, input, output files.')
 parser.add_argument('-m', '--mode',
                     choices=['I', 'P', 'N'],
-                    help="Select the operation mode: 'I' generates individual "
-                    "tracks. 'P' generates internal generalized tracks. "
-                    "'N' generates nodes.")
+                    help="Select the operation mode: 'I' for individual "
+                    "tracks. 'P' for internal generalized tracks. "
+                    "'N' for generalized nodes.")
 parser.add_argument('-i', '--input',
                     nargs='+',
                     help="Input file or files. "
-                    "If '-m I', it needs to be a single CSV file "
+                    "If '-m I', it must be a single CSV file "
                     "with three columns: species, lat (Latitude) and "
-                    "lon (Longitude), in that explicit order.\n"
+                    "lon (Longitude), in that order.\n"
                     "If '-m P' or '-m N', it must be a set of at least two "
-                    "SHP files.")
-parser.add_argument('-p', '--path',
-                    metavar="path",
-                    type=str,
-                    )
+                    "SHP files, separated by a space each.")
 parser.add_argument('-o', '--output',
                     dest='shp_file', 
-                    help="Location and name of the SHP output "
-                    "file, without extension. If '-m I', it's the "
-                    "directory where the output files will be saved.")
+                    help="Location and name of the SHP output file, without "
+                    "file extension. If '-m I', it must be the path to the "
+                    "directory where the output files will be saved to.")
 args = parser.parse_args()
 
 if args.mode == 'I':
@@ -102,7 +98,8 @@ if args.mode == 'I':
             # Saving the MST to a SHP file:
             filename = dfi['species'].loc[dfi.index[0]]
             shpw(f"{args.shp_file}/{filename}")
-            print(f"The track was saved to {args.shp_file}/{filename}.shp")
+            print(f"The individual track was saved to "
+                  "{args.shp_file}/{filename}.shp")
             print("\nEND")
 
 elif args.mode == 'P':
@@ -113,10 +110,8 @@ elif args.mode == 'P':
         if glob.escape(i) != i:
             gp_it_list.extend(glob.glob(i))
         else:
-            k = gprf(glob.glob(i))
+            k = gprf(i)
             gp_it_list.append(k)
-
-    print(gp_it_list)
 
     # Making intersections
     for a, b in itt.combinations(gp_it_list, 2): # type: ignore
@@ -145,7 +140,7 @@ elif args.mode == 'P':
             add_edge(i, j, vc(la, lo))
 
     # Prim function to calculate MST
-    print("\nMinimal distances:")
+    print("\nMinimal distances between vertices:")
     prim(coords_list_df.shape[0], graph, edges)
 
     # Making tuples of points to trace edges.
@@ -159,7 +154,7 @@ elif args.mode == 'P':
 
     # Saving the MST shapefile
     shpw(args.shp_file)
-    print(f"\nThe track was saved to {args.shp_file}.shp")
+    print(f"\nThe internal generalized track was saved to {args.shp_file}.shp")
     print("\nEND")
 
 elif args.mode == 'N':
@@ -176,7 +171,6 @@ elif args.mode == 'N':
     # Finding intersections
     for a, b in itt.combinations(gt_gp_list, 2): # type: ignore
         nodes_list = ni(a, b)
-        print(nodes_list)
         if len(nodes_list[~nodes_list.is_empty]) == 0:
             continue
         else:
@@ -184,20 +178,18 @@ elif args.mode == 'N':
                 nodes_list.geometry.y.astype(float)))
             coords_list = [*coords_list, *nodes_coord_list]
 
-    print(coords_list)
-
     # Making list of coordinates
     coords_list_df = pddf(coords_list, columns=['lon', 'lat'])
     coords_list_df['geometry'] = (coords_list_df.apply
-                                    (lambda x: Point(x.lon, x.lat), axis=1))
+                                  (lambda x: Point(x.lon, x.lat), axis=1))
     coords_list_df = coords_list_df.drop(['lon', 'lat'], axis=1)
 
     # Saving SHP output file
     coords_list_gdf = gpgdf(coords_list_df)
     coords_list_gdf.to_file(args.shp_file, driver='ESRI Shapefile') # type: ignore
-    print(f"\nThe track was saved to {args.shp_file}.shp")
+    print(f"\nGeneralized nodes were saved to {args.shp_file}.shp")
     print("\nEND")
 
 else:
-    print(
-        f"{args.mode} is not a valid option. Please use '-m I', '-m P' or '-m N', or type 'panbiotracks -h' for help.")
+    print(f"{args.mode} is not a valid option. Please use '-m I', "
+          "'-m P' or '-m N', or type 'panbiotracks -h' for help.")
