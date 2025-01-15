@@ -88,7 +88,8 @@ if args.mode == 'I':
                     add_edge(i, j, vc(la, lo))
 
             # Prim function to calculate MST
-            print(f"\n{dfi['species'].loc[dfi.index[0]]} - Minimal distances:")
+            print(f"\n{dfi['species'].loc[dfi.index[0]]} - "
+                f"Minimal distances between vertices:")
             prim(dfi.shape[0], graph, edges)
 
             # Making tuples of points to trace edges:
@@ -103,7 +104,7 @@ if args.mode == 'I':
             filename = dfi['species'].loc[dfi.index[0]]
             shpw(f"{args.shp_file}/{filename}")
             print(f"The individual track was saved to "
-                  "{args.shp_file}/{filename}.shp")
+                f"{args.shp_file}/{filename}.shp")
             print("\nEND")
 
 elif args.mode == 'P':
@@ -184,13 +185,14 @@ elif args.mode == 'N':
 
     # Making list of coordinates
     coords_list_df = pddf(coords_list, columns=['lon', 'lat'])
-    coords_list_df['geometry'] = (coords_list_df.apply
-                                  (lambda x: Point(x.lon, x.lat), axis=1))
+    coords_list_df['geometry'] = (
+        coords_list_df.apply(lambda x: Point(x.lon, x.lat), axis=1))
     coords_list_df = coords_list_df.drop(['lon', 'lat'], axis=1)
 
     # Saving SHP output file
     coords_list_gdf = gpgdf(coords_list_df)
-    coords_list_gdf.to_file(args.shp_file, driver='ESRI Shapefile') # type: ignore
+    print(coords_list_gdf)
+    coords_list_gdf.to_file('args.shp_file', driver='ESRI Shapefile') # type: ignore
     print(f"\nGeneralized nodes were saved to {args.shp_file}.shp")
     print("\nEND")
 
