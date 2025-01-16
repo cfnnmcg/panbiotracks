@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Panbiotracks v. 0.2.3
+# Panbiotracks v. 0.2.4
 # (c) Carlos Fernando Castillo-García, Universidad Nacional Autónoma de México
 # 2023-2024
 
@@ -53,7 +53,7 @@ parser.add_argument('-o', '--output',
                     "directory where the output files will be saved to.")
 parser.add_argument('-v', '--version',
                     action='version',
-                    version='0.2.3',
+                    version='0.2.4',
                     help="Displays program version and exits.")
 args = parser.parse_args()
 
@@ -199,7 +199,7 @@ elif args.mode == 'N':
     print("\nEND")
 
 elif args.version:
-    print("Panbiotracks 0.2.3")
+    print("Panbiotracks 0.2.4")
 
 else:
     print(f"{args.mode} is not a valid option. Please use '-m I', "
