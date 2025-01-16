@@ -21,6 +21,7 @@ import numpy as np
 import itertools as itt
 from vincenty import vincenty_inverse as vc
 from shapely.geometry import Point
+from pathlib import Path
 
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.append(path)
@@ -191,8 +192,9 @@ elif args.mode == 'N':
 
     # Saving SHP output file
     coords_list_gdf = gpgdf(coords_list_df)
-    print(coords_list_gdf)
-    coords_list_gdf.to_file('args.shp_file', driver='ESRI Shapefile') # type: ignore
+    output_file = Path(args.shp_file)
+    output_file.parent.mkdir(exist_ok=True, parents=True)
+    coords_list_gdf.to_file(f"{output_file}.shp", driver='ESRI Shapefile') # type: ignore
     print(f"\nGeneralized nodes were saved to {args.shp_file}.shp")
     print("\nEND")
 
