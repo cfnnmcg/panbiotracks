@@ -1,26 +1,23 @@
-[tool.poetry]
+[project]
 name = "Panbiotracks"
-version = "0.2.2"
+version = "0.2.4"
 description = "A program to do track analysis for panbiogeography."
-authors = ["Carlos Fernando Castillo <cfcastillo@tutanota.com>"]
 readme = "README.md"
-
-[tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-vincenty = "^0.1.4"
-numpy = "^1.24.2"
-pandas = "^1.5.3"
-pyshp = "^2.3.1"
-fiona = "^1.10"
-shapely = "^2.0.1"
-geopandas = "^0.14.0"
-ogr = "^0.44.0"
-gdal = "3.7.*"
-rdp = "^0.8"
-pyinstaller = "^6.8.0"
-
-[tool.poetry.group.dev.dependencies]
-ipykernel = "^6.29.5"
+authors = [
+    {name = "Carlos Fernando Castillo", email = "cfcastillo@tutanota.com"}
+    ]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "vincenty >= 0.1.4",
+    "numpy >= 1.24",
+    "pandas >= 1.5",
+    "pyshp >= 2.3",
+    "fiona >= 1.10",
+    "shapely >= 2.0",
+    "geopandas >= 0.14",
+    "gdal ~= 3.7.0",
+    "pyinstaller >= 6.8"
+]
 
 [build-system]
 requires = ["poetry-core"]
