@@ -2,7 +2,7 @@
 
 # Panbiotracks v. 0.2.4
 # (c) Carlos Fernando Castillo-García, Universidad Nacional Autónoma de México
-# 2023-2024
+# 2023-2025
 
 # This program was made as a fulfillment of the author for obtaining a 
 # M.Sc. degree in the Posgrado en Ciencias Biológicas, 
@@ -11,20 +11,22 @@
 # Ciencias y Tecnologías (CONAHCyT) for the support of this research through 
 # a graduate scholarship.
 
-import sys
-import os
+#import sys
+#import os
 import argparse
 import glob
 from pandas import read_csv as pdreadcsv, DataFrame as pddf
 from geopandas import read_file as gprf, GeoDataFrame as gpgdf
-import numpy as np
-import itertools as itt
+#import numpy as np
+from numpy import array as nparr, int32 as np32
+#import itertools as itt
+from itertools import combinations as itcomb
 from vincenty import vincenty_inverse as vc
 from shapely.geometry import Point
 from pathlib import Path
 
-path = os.path.join(os.path.dirname(__file__), os.pardir)
-sys.path.append(path)
+#path = os.path.join(os.path.dirname(__file__), os.pardir)
+#sys.path.append(path)
 
 from modules.functions import (
     add_vertex, add_edge, prim_algorithm as prim, shp_writer as shpw,
@@ -95,7 +97,7 @@ if args.mode == 'I':
 
             # Making tuples of points to trace edges:
             coords = dfi.to_numpy()
-            edges_np = np.array(edges, dtype=np.int32)
+            edges_np = nparr(edges, dtype=np32)
             for e in edges_np:
                 i, j = e
                 edge_list.append([(coords[i, 2], coords[i, 1]),
@@ -120,7 +122,7 @@ elif args.mode == 'P':
             gp_it_list.append(k)
 
     # Making intersections
-    for a, b in itt.combinations(gp_it_list, 2): # type: ignore
+    for a, b in itcomb(gp_it_list, 2): # type: ignore
         nodes_list = ni(a, b)
         if len(nodes_list[~nodes_list.is_empty]) == 0:
             continue
@@ -151,7 +153,7 @@ elif args.mode == 'P':
 
     # Making tuples of points to trace edges.
     coords = coords_list_df.to_numpy()
-    edges = np.array(edges, dtype=np.int32)
+    edges = nparr(edges, dtype=np32)
     for e in edges:
         i, j = e
         edge_list.append([(coords[i, 1], coords[i, 0]),
@@ -175,7 +177,7 @@ elif args.mode == 'N':
             gt_gp_list.append(k)
 
     # Finding intersections
-    for a, b in itt.combinations(gt_gp_list, 2): # type: ignore
+    for a, b in itcomb(gt_gp_list, 2): # type: ignore
         nodes_list = ni(a, b)
         if len(nodes_list[~nodes_list.is_empty]) == 0:
             continue
@@ -194,6 +196,9 @@ elif args.mode == 'N':
     coords_list_gdf = gpgdf(coords_list_df)
     output_file = Path(args.shp_file)
     output_file.parent.mkdir(exist_ok=True, parents=True)
+    # This sets the CRS of the SHP file:
+    # Maybe add an option to let the user assign a custom one?
+    coords_list_gdf.set_crs(crs="EPSG:4326", inplace=True)
     coords_list_gdf.to_file(f"{output_file}.shp", driver='ESRI Shapefile') # type: ignore
     print(f"\nGeneralized nodes were saved to {args.shp_file}.shp")
     print("\nEND")
@@ -203,4 +208,4 @@ elif args.version:
 
 else:
     print(f"{args.mode} is not a valid option. Please use '-m I', "
-          "'-m P' or '-m N', or type 'panbiotracks -h' for help.")
+          "'-m P' or '-m N', or use '-h' for help.")

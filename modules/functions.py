@@ -1,6 +1,5 @@
-from modules import graph, vertices_n, vertices
+from modules import graph, vertices_n, vertices, edge_list
 from shapefile import Writer
-from modules import edge_list
 
 def add_vertex(v):
     """
