@@ -88,7 +88,7 @@ Where **FILE_n.shp** are the ESRI shape files that contain the tracks that will 
 ## References
 
 - Croizat, L.1958. Panbiogeography. Vols. 1 y 2. Published by the author, Caracas.
-- Morrone, J. J. (2015). Track analysis beyond panbiogeography. Journal of Biogeography, 42(3), 413-425. https://doi.org/10.1111/jbi.12467
+- Morrone, J. J. (2015). Track analysis beyond panbiogeography. Journal of Biogeography, 42(3), 413-425. <https://doi.org/10.1111/jbi.12467>
 
 ## Acknowledgements
 
@@ -96,5 +96,4 @@ This program was made as a fulfillment of the author for obtaining a M.Sc. degre
 
 ## How to cite
 
-Castillo-García, C. F., Morrone, J. J., Salgado-Ugarte, I. H., & Espinosa, D. (2025). Panbiotracks: Software for track analysis. Revista Mexicana de Biodiversidad, 96, e965429-e965429. https://doi.org/10.22201/ib.20078706e.2025.96.5429
-
+Castillo-García, C. F., Morrone, J. J., Salgado-Ugarte, I. H., & Espinosa, D. (2025). Panbiotracks: Software for track analysis. *Revista Mexicana de Biodiversidad*, 96, e965429-e965429. <https://doi.org/10.22201/ib.20078706e.2025.96.5429>
