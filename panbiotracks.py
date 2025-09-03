@@ -62,6 +62,9 @@ args = parser.parse_args()
 if args.mode == 'I':
     # INDIVIDUAL TRACKS METHOD
     # Opening CSV file and deleting duplicate records
+    print(f"\n{len(args.input)} CSV file was loaded. "
+          "Building Individual Tracks...")
+    
     for i in args.input:
         with open(i) as fo:
             df = pdreadcsv(fo, header=0, dtype={'lat': float, 'lon': float})
@@ -114,10 +117,26 @@ elif args.mode == 'P':
     # INTERNAL GENERALIZED TRACKS METHOD
     # Global list of input files' paths
     gp_it_list = []
-    for i in args.input:
-        if glob.escape(i) != i:
-            gp_it_list.extend(glob.glob(i))
-        else:
+    
+    # Check lenght of input to determine if there's a wildcard:
+    if len(args.input) < 2:
+        for item in args.input:
+            if item.find('*') > -1:
+                pre_it_list = glob.glob(args.input.pop(0))
+                print(f"\n{len(pre_it_list)} SHP files were loaded. "
+                      "Building Internal Generalized Track...")
+                for i in pre_it_list:
+                    k = gprf(i)
+                    gp_it_list.append(k)
+            else:
+                print(f"\nERROR: Panbiotracks needs more than 1 input file "
+                      "to perform this function. Add 2 or more files "
+                      "after the '-i' flag and try again.")
+                quit()
+    else:
+        print(f"\n{len(args.input)} SHP files were loaded. "
+              "Building Internal Generalized Track...")
+        for i in args.input:
             k = gprf(i)
             gp_it_list.append(k)
 
@@ -169,10 +188,26 @@ elif args.mode == 'N':
     # NODES METHOD
     # Global list of generalized tracks
     gt_gp_list = []
-    for i in args.input:
-        if glob.escape(i) != i:
-            gt_gp_list.extend(glob.glob(i))
-        else:
+    
+    # Check lenght of input to determine if there's a wildcard:
+    if len(args.input) < 2:
+        for item in args.input:
+            if item.find('*') > -1:
+                pre_it_list = glob.glob(args.input.pop(0))
+                print(f"\n{len(pre_it_list)} SHP files were loaded. "
+                      "Finding Generalized Nodes...")
+                for i in pre_it_list:
+                    k = gprf(i)
+                    gt_gp_list.append(k)
+            else:
+                print(f"\nERROR: Panbiotracks needs more than 1 input file "
+                      "to perform this function. Add 2 or more files "
+                      "after the '-i' flag and try again.")
+                quit()
+    else:
+        print(f"\n{len(args.input)} SHP files were loaded. "
+              "Finding Generalized Nodes...")
+        for i in args.input:
             k = gprf(i)
             gt_gp_list.append(k)
 
@@ -204,7 +239,7 @@ elif args.mode == 'N':
     print("\nEND")
 
 elif args.version:
-    print("Panbiotracks 0.2.4")
+    print(f"Panbiotracks {args.version}")
 
 else:
     print(f"{args.mode} is not a valid option. Please use '-m I', "
