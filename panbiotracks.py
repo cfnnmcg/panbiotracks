@@ -34,7 +34,9 @@ from modules.functions import (
 from modules import graph, edge_list, edges, coords_list, vertices
 
 # Define script arguments
-parser = argparse.ArgumentParser(description='Options, input, output files.')
+parser = argparse.ArgumentParser(prog = 'Panbiotracks',
+                                 description='Panbiotracks - ' \
+                                 'Options, and input and output files.')
 parser.add_argument('-m', '--mode',
                     choices=['I', 'P', 'N'],
                     help="Select the operation mode: 'I' for individual "
@@ -47,16 +49,20 @@ parser.add_argument('-i', '--input',
                     "with three columns: species, lat (Latitude) and "
                     "lon (Longitude), in that order.\n"
                     "If '-m P' or '-m N', it must be a set of at least two "
-                    "SHP files, separated by a space each.")
+                    "SHP files, separated by a space each. "
+                    "It can also be a path with a wildcard (i.e. "
+                    "/path/to/my/files/*.shp), in which case Panbiotracks will "
+                    "process ALL of the SHP files within the given directory.")
 parser.add_argument('-o', '--output',
                     dest='shp_file', 
-                    help="Location and name of the SHP output file, without "
-                    "file extension. If '-m I', it must be the path to the "
-                    "directory where the output files will be saved to.")
+                    help="If '-m I', it must be the path to the "
+                    "directory where the SHP output files will be saved to. "
+                    "If '-m P' or '-m N', it's the path and name of the "
+                    "SHP output file, without file extension.")
 parser.add_argument('-v', '--version',
                     action='version',
-                    version='0.2.5',
-                    help="Displays program version and exits.")
+                    version='%(prog)s 0.2.5',
+                    help="Displays the program's version and exits.")
 args = parser.parse_args()
 
 if args.mode == 'I':
