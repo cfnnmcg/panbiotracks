@@ -48,11 +48,23 @@ A set of SHP files, each one containing an individual track. There must be at le
 /home/user/shapefile1.shp /home/user/shapefile2.shp
 ```
 
-The file paths can be relative or absolute.
+The file paths can be relative or absolute. It's also possible to enter a path with wildcards, like this:
+
+```console
+/home/user/*.shp
+```
+
+In this case, Panbiotracks will use *all* of the SHP files within the directory to generate the output.
 
 #### Nodes
 
-A set of SHP files, each one containing an internal generalized track. There must be at least two of them, separated by a space. The file paths can be relative or absolute.
+A set of SHP files, each one containing an internal generalized track. There must be at least two of them, separated by a space. The file paths can be relative or absolute. It's also possible to enter a path with wildcards, like this:
+
+```console
+/home/user/*.shp
+```
+
+In this case, Panbiotracks will use *all* of the SHP files within the directory to generate the output.
 
 ### Individual Tracks
 
