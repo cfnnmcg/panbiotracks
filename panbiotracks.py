@@ -135,7 +135,7 @@ elif args.mode == 'P':
                     k = gprf(i)
                     gp_it_list.append(k)
             else:
-                print(f"\nERROR: Panbiotracks needs more than 1 input file "
+                print("\nERROR: Panbiotracks needs more than 1 input file "
                       "to perform this function. Add 2 or more files "
                       "after the '-i' flag and try again.")
                 quit()
@@ -147,7 +147,7 @@ elif args.mode == 'P':
             gp_it_list.append(k)
 
     # Making intersections
-    for a, b in itcomb(gp_it_list, 2): # type: ignore
+    for a, b in itcomb(gp_it_list, 2):
         nodes_list = ni(a, b)
         if len(nodes_list[~nodes_list.is_empty]) == 0:
             continue
@@ -206,7 +206,7 @@ elif args.mode == 'N':
                     k = gprf(i)
                     gt_gp_list.append(k)
             else:
-                print(f"\nERROR: Panbiotracks needs more than 1 input file "
+                print("\nERROR: Panbiotracks needs more than 1 input file "
                       "to perform this function. Add 2 or more files "
                       "after the '-i' flag and try again.")
                 quit()
@@ -218,7 +218,7 @@ elif args.mode == 'N':
             gt_gp_list.append(k)
 
     # Finding intersections
-    for a, b in itcomb(gt_gp_list, 2): # type: ignore
+    for a, b in itcomb(gt_gp_list, 2):
         nodes_list = ni(a, b)
         if len(nodes_list[~nodes_list.is_empty]) == 0:
             continue
