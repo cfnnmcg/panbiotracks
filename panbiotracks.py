@@ -15,23 +15,31 @@
 #import os
 import argparse
 import glob
-from pandas import read_csv as pdreadcsv, DataFrame as pddf
-from geopandas import read_file as gprf, GeoDataFrame as gpgdf
-#import numpy as np
-from numpy import array as nparr, int32 as np32
+import sys
+
 #import itertools as itt
 from itertools import combinations as itcomb
-from vincenty import vincenty_inverse as vc
-from shapely.geometry import Point
 from pathlib import Path
+
+from geopandas import GeoDataFrame as gpgdf
+from geopandas import read_file as gprf
+
+#import numpy as np
+from numpy import array as nparr
+from numpy import int32 as np32
+from pandas import DataFrame as pddf
+from pandas import read_csv as pdreadcsv
+from shapely.geometry import Point
+from vincenty import vincenty_inverse as vc
+
+from modules import coords_list, edge_list, edges, graph, vertices
 
 #path = os.path.join(os.path.dirname(__file__), os.pardir)
 #sys.path.append(path)
-
-from modules.functions import (
-    add_vertex, add_edge, prim_algorithm as prim, shp_writer as shpw,
-    nodes_intersect as ni)
-from modules import graph, edge_list, edges, coords_list, vertices
+from modules.functions import add_edge, add_vertex
+from modules.functions import nodes_intersect as ni
+from modules.functions import prim_algorithm as prim
+from modules.functions import shp_writer as shpw
 
 # Define script arguments
 parser = argparse.ArgumentParser(prog = 'Panbiotracks',
@@ -138,7 +146,7 @@ elif args.mode == 'P':
                 print("\nERROR: Panbiotracks needs more than 1 input file "
                       "to perform this function. Add 2 or more files "
                       "after the '-i' flag and try again.")
-                quit()
+                sys.exit()
     else:
         print(f"\n{len(args.input)} SHP files were loaded. "
               "Building Internal Generalized Track...")
@@ -183,7 +191,7 @@ elif args.mode == 'P':
         i, j = e
         edge_list.append([(coords[i, 1], coords[i, 0]),
         (coords[j, 1], coords[j, 0])])
-    edge_list = list(sorted(edge_list))
+    edge_list = sorted(edge_list)
 
     # Saving the MST shapefile
     shpw(args.shp_file)
@@ -209,7 +217,7 @@ elif args.mode == 'N':
                 print("\nERROR: Panbiotracks needs more than 1 input file "
                       "to perform this function. Add 2 or more files "
                       "after the '-i' flag and try again.")
-                quit()
+                sys.exit()
     else:
         print(f"\n{len(args.input)} SHP files were loaded. "
               "Finding Generalized Nodes...")
