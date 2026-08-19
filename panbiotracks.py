@@ -12,9 +12,9 @@
 # a graduate scholarship.
 
 #import sys
-#import os
 import argparse
 import glob
+import os
 import sys
 
 #import itertools as itt
@@ -22,6 +22,7 @@ from itertools import combinations as itcomb
 from pathlib import Path
 
 from geopandas import GeoDataFrame as gpgdf
+from geopandas import GeoSeries as gpds
 from geopandas import read_file as gprf
 
 #import numpy as np
@@ -29,7 +30,7 @@ from numpy import array as nparr
 from numpy import int32 as np32
 from pandas import DataFrame as pddf
 from pandas import read_csv as pdreadcsv
-from shapely.geometry import Point
+from shapely.geometry import MultiLineString, Point
 from vincenty import vincenty_inverse as vc
 
 from modules import coords_list, edge_list, edges, graph, vertices
@@ -39,7 +40,8 @@ from modules import coords_list, edge_list, edges, graph, vertices
 from modules.functions import add_edge, add_vertex
 from modules.functions import nodes_intersect as ni
 from modules.functions import prim_algorithm as prim
-from modules.functions import shp_writer as shpw
+
+#from modules.functions import shp_writer as shpw
 
 # Define script arguments
 parser = argparse.ArgumentParser(prog = 'Panbiotracks',
@@ -67,10 +69,21 @@ parser.add_argument('-o', '--output',
                     "directory where the SHP output files will be saved to. "
                     "If '-m P' or '-m N', it's the path and name of the "
                     "SHP output file, without file extension.")
+parser.add_argument('-of', '--output_format',
+                    choices=['gpkg', 'geojson', 'shp'],
+                    help="Output file format. "
+                    "Use 'gpkg' for GeoPackage, 'geojson' for GeoJSON, "
+                    "or 'shp' for ESRI Shapefile. "
+                    "By default, Panbiotracks saves output tracks and nodes "
+                    "in the GeoPackage format.")
 parser.add_argument('-v', '--version',
                     action='version',
                     version='%(prog)s 0.2.5',
                     help="Displays the program's version and exits.")
+if len(sys.argv)==1:
+    parser.print_help()
+    # parser.print_usage() # for just the usage line
+    parser.exit()
 args = parser.parse_args()
 
 if args.mode == 'I':
@@ -108,8 +121,9 @@ if args.mode == 'I':
                     add_edge(i, j, vc(la, lo))
 
             # Prim function to calculate MST
-            print(f"\n{dfi['species'].loc[dfi.index[0]]} - "
-                f"Minimal distances between vertices:")
+            filename = dfi['species'].loc[dfi.index[0]]
+
+            print(f"\n{filename} - Minimal distances between vertices:")
             prim(dfi.shape[0], graph, edges)
 
             # Making tuples of points to trace edges:
@@ -121,14 +135,34 @@ if args.mode == 'I':
                 (coords[j, 2], coords[j, 1])])
 
             # Saving the MST to a SHP file:
-            filename = dfi['species'].loc[dfi.index[0]]
-            shpw(f"{args.shp_file}/{filename}")
+            #shpw(f"{args.shp_file}/{filename}") <- Deprecated function.
+            it = gpds(MultiLineString(edge_list), crs="epsg:4326")
+            
+            if args.output_format == "gpkg" or args.output_format is None:
+                fileext = "gpkg"
+                ofile = os.path.join(args.shp_file, filename + '.' + fileext)
+                os.makedirs(os.path.dirname(ofile), exist_ok=True)
+                it.to_file(ofile, driver="GPKG")
+
+            elif args.output_format == "geojson":
+                fileext = "geojson"
+                ofile = os.path.join(args.shp_file, filename + '.' + fileext)
+                os.makedirs(os.path.dirname(ofile), exist_ok=True)
+                it.to_file(ofile, driver="GeoJSON")
+            
+            elif args.output_format == "shp":
+                fileext = "shp"
+                ofile = os.path.join(args.shp_file, filename + '.' + fileext)
+                os.makedirs(os.path.dirname(ofile), exist_ok=True)
+                it.to_file(ofile, driver="ESRI Shapefile")
+
             print(f"The individual track was saved to "
-                f"{args.shp_file}/{filename}.shp")
+            f"{args.shp_file}/{filename}.{fileext}")
             print("\nEND")
 
+
+# INTERNAL GENERALIZED TRACKS METHOD
 elif args.mode == 'P':
-    # INTERNAL GENERALIZED TRACKS METHOD
     # Global list of input files' paths
     gp_it_list = []
     
@@ -194,8 +228,29 @@ elif args.mode == 'P':
     edge_list = sorted(edge_list)
 
     # Saving the MST shapefile
-    shpw(args.shp_file)
-    print(f"\nThe internal generalized track was saved to {args.shp_file}.shp")
+    #shpw(args.shp_file)
+    it = gpds(MultiLineString(edge_list), crs="epsg:4326")
+    
+    # REVISAR ESTOS BLOQUES PARA VER SI GUARDAN COMO DEBEN GUARDAR.
+    if args.output_format == "gpkg" or args.output_format is None:
+        fileext = "gpkg"
+        ofile = os.path.join(args.shp_file + '.' + fileext)
+        os.makedirs(os.path.dirname(ofile), exist_ok=True)
+        it.to_file(ofile, driver="GPKG")
+
+    elif args.output_format == "geojson":
+        fileext = "geojson"
+        ofile = os.path.join(args.shp_file + '.' + fileext)
+        os.makedirs(os.path.dirname(ofile), exist_ok=True)
+        it.to_file(ofile, driver="GeoJSON")
+    
+    elif args.output_format == "shp":
+        fileext = "shp"
+        ofile = os.path.join(args.shp_file + '.' + fileext)
+        os.makedirs(os.path.dirname(ofile), exist_ok=True)
+        it.to_file(ofile, driver="ESRI Shapefile")
+
+    print(f"\nThe internal generalized track was saved to {args.shp_file}.{fileext}")
     print("\nEND")
 
 elif args.mode == 'N':
@@ -254,6 +309,10 @@ elif args.mode == 'N':
 
 elif args.version:
     print(f"Panbiotracks {args.version}")
+    sys.exit()
+
+elif args == None:
+    sys.exit()
 
 else:
     print(f"{args.mode} is not a valid option. Please use '-m I', "
