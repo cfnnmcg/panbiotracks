@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-# Panbiotracks v. 0.2.5
+# Panbiotracks v. 0.3.0
 # (c) Carlos Fernando Castillo-García, Universidad Nacional Autónoma de México
-# 2023-2025
+# 2023-2026
 
 # This program was made as a fulfillment of the author for obtaining a 
 # M.Sc. degree in the Posgrado en Ciencias Biológicas, 
-# Universidad Nacional Autónoma de México, Mexico. 
-# The author thanks the Consejo Nacional de Humanidades, 
-# Ciencias y Tecnologías (CONAHCyT) for the support of this research through 
+# Universidad Nacional Autónoma de México (UNAM), Mexico. 
+# The author thanks the Secretaría de Ciencia, Humanidades, Tecnología e
+# Innovación (SECIHTI) for the support of this research through 
 # a graduate scholarship.
 
 #import sys
@@ -16,16 +16,12 @@ import argparse
 import glob
 import os
 import sys
-
-#import itertools as itt
 from itertools import combinations as itcomb
-from pathlib import Path
 
+#from pathlib import Path
 from geopandas import GeoDataFrame as gpgdf
 from geopandas import GeoSeries as gpds
 from geopandas import read_file as gprf
-
-#import numpy as np
 from numpy import array as nparr
 from numpy import int32 as np32
 from pandas import DataFrame as pddf
@@ -34,51 +30,55 @@ from shapely.geometry import MultiLineString, Point
 from vincenty import vincenty_inverse as vc
 
 from modules import coords_list, edge_list, edges, graph, vertices
-
-#path = os.path.join(os.path.dirname(__file__), os.pardir)
-#sys.path.append(path)
 from modules.functions import add_edge, add_vertex
 from modules.functions import nodes_intersect as ni
 from modules.functions import prim_algorithm as prim
 
 #from modules.functions import shp_writer as shpw
 
-# Define script arguments
+# Define program arguments
 parser = argparse.ArgumentParser(prog = 'Panbiotracks',
                                  description='Panbiotracks - ' \
-                                 'Options, and input and output files.')
+                                 'Options, input and output files.')
 parser.add_argument('-m', '--mode',
                     choices=['I', 'P', 'N'],
-                    help="Select the operation mode: 'I' for individual "
+                    help="Set the operation mode: 'I' for individual "
                     "tracks. 'P' for internal generalized tracks. "
-                    "'N' for generalized nodes.")
+                    "'N' for generalized nodes."
+                    )
 parser.add_argument('-i', '--input',
                     nargs='+',
                     help="Input file or files. "
-                    "If '-m I', it must be a single CSV file "
+                    "In individual tracks mode, it must be a single CSV file "
                     "with three columns: species, lat (Latitude) and "
-                    "lon (Longitude), in that order.\n"
-                    "If '-m P' or '-m N', it must be a set of at least two "
-                    "SHP files, separated by a space each. "
-                    "It can also be a path with a wildcard (i.e. "
-                    "/path/to/my/files/*.shp), in which case Panbiotracks will "
-                    "process ALL of the SHP files within the given directory.")
+                    "lon (Longitude), in that order. "
+                    "For internal generalized tracks and generalized nodes, it "
+                    "must be a set of at least two files in the GeoPackage, "
+                    "GeoJSON, or SHP formats, separated by a space each. "
+                    "It is possible to use a path with a wildcard to process "
+                    "all of the files present within a directory "
+                    "(i. e. /path/to/files/*.shp)."
+                    )
 parser.add_argument('-o', '--output',
-                    dest='shp_file', 
-                    help="If '-m I', it must be the path to the "
-                    "directory where the SHP output files will be saved to. "
-                    "If '-m P' or '-m N', it's the path and name of the "
-                    "SHP output file, without file extension.")
+                    dest='output_fd', 
+                    help="For individual tracks, the output is the directory "
+                    "where the resulting file or files will be saved. If the "
+                    "directory don't exists, it will be created recursively. "
+                    "For internal generalized tracks and generalized nodes, "
+                    "the output is the name of the resulting file or files, "
+                    "without file extension."
+                    )
 parser.add_argument('-of', '--output_format',
                     choices=['gpkg', 'geojson', 'shp'],
-                    help="Output file format. "
-                    "Use 'gpkg' for GeoPackage, 'geojson' for GeoJSON, "
-                    "or 'shp' for ESRI Shapefile. "
-                    "By default, Panbiotracks saves output tracks and nodes "
-                    "in the GeoPackage format.")
+                    help="Optional. Specifies the output file format. "
+                    "Use gpkg for GeoPackage, geojson for GeoJSON, "
+                    "or shp for ESRI Shapefile. "
+                    "If this argument is not used, Panbiotracks will save the "
+                    "resulting tracks and nodes in the GeoPackage format."
+                    )
 parser.add_argument('-v', '--version',
                     action='version',
-                    version='%(prog)s 0.2.5',
+                    version='%(prog)s 0.3.0',
                     help="Displays the program's version and exits.")
 if len(sys.argv)==1:
     parser.print_help()
@@ -135,29 +135,29 @@ if args.mode == 'I':
                 (coords[j, 2], coords[j, 1])])
 
             # Saving the MST to a SHP file:
-            #shpw(f"{args.shp_file}/{filename}") <- Deprecated function.
+            #shpw(f"{args.output_fd}/{filename}") <- Deprecated function.
             it = gpds(MultiLineString(edge_list), crs="epsg:4326")
             
             if args.output_format == "gpkg" or args.output_format is None:
                 fileext = "gpkg"
-                ofile = os.path.join(args.shp_file, filename + '.' + fileext)
+                ofile = os.path.join(args.output_fd, filename + '.' + fileext)
                 os.makedirs(os.path.dirname(ofile), exist_ok=True)
                 it.to_file(ofile, driver="GPKG")
 
             elif args.output_format == "geojson":
                 fileext = "geojson"
-                ofile = os.path.join(args.shp_file, filename + '.' + fileext)
+                ofile = os.path.join(args.output_fd, filename + '.' + fileext)
                 os.makedirs(os.path.dirname(ofile), exist_ok=True)
                 it.to_file(ofile, driver="GeoJSON")
             
             elif args.output_format == "shp":
                 fileext = "shp"
-                ofile = os.path.join(args.shp_file, filename + '.' + fileext)
+                ofile = os.path.join(args.output_fd, filename + '.' + fileext)
                 os.makedirs(os.path.dirname(ofile), exist_ok=True)
                 it.to_file(ofile, driver="ESRI Shapefile")
 
             print(f"The individual track was saved to "
-            f"{args.shp_file}/{filename}.{fileext}")
+            f"{args.output_fd}/{filename}.{fileext}")
             print("\nEND")
 
 
@@ -171,7 +171,7 @@ elif args.mode == 'P':
         for item in args.input:
             if item.find('*') > -1:
                 pre_it_list = glob.glob(args.input.pop(0))
-                print(f"\n{len(pre_it_list)} SHP files were loaded. "
+                print(f"\n{len(pre_it_list)} input files were loaded. "
                       "Building Internal Generalized Track...")
                 for i in pre_it_list:
                     k = gprf(i)
@@ -179,7 +179,7 @@ elif args.mode == 'P':
             else:
                 print("\nERROR: Panbiotracks needs more than 1 input file "
                       "to perform this function. Add 2 or more files "
-                      "after the '-i' flag and try again.")
+                      "after the '-i' option and try again.")
                 sys.exit()
     else:
         print(f"\n{len(args.input)} SHP files were loaded. "
@@ -228,29 +228,27 @@ elif args.mode == 'P':
     edge_list = sorted(edge_list)
 
     # Saving the MST shapefile
-    #shpw(args.shp_file)
     it = gpds(MultiLineString(edge_list), crs="epsg:4326")
     
-    # REVISAR ESTOS BLOQUES PARA VER SI GUARDAN COMO DEBEN GUARDAR.
     if args.output_format == "gpkg" or args.output_format is None:
         fileext = "gpkg"
-        ofile = os.path.join(args.shp_file + '.' + fileext)
+        ofile = os.path.join(args.output_fd + '.' + fileext)
         os.makedirs(os.path.dirname(ofile), exist_ok=True)
         it.to_file(ofile, driver="GPKG")
 
     elif args.output_format == "geojson":
         fileext = "geojson"
-        ofile = os.path.join(args.shp_file + '.' + fileext)
+        ofile = os.path.join(args.output_fd + '.' + fileext)
         os.makedirs(os.path.dirname(ofile), exist_ok=True)
         it.to_file(ofile, driver="GeoJSON")
     
     elif args.output_format == "shp":
         fileext = "shp"
-        ofile = os.path.join(args.shp_file + '.' + fileext)
+        ofile = os.path.join(args.output_fd + '.' + fileext)
         os.makedirs(os.path.dirname(ofile), exist_ok=True)
         it.to_file(ofile, driver="ESRI Shapefile")
 
-    print(f"\nThe internal generalized track was saved to {args.shp_file}.{fileext}")
+    print(f"\nThe internal generalized track was saved to {args.output_fd}.{fileext}")
     print("\nEND")
 
 elif args.mode == 'N':
@@ -263,7 +261,7 @@ elif args.mode == 'N':
         for item in args.input:
             if item.find('*') > -1:
                 pre_it_list = glob.glob(args.input.pop(0))
-                print(f"\n{len(pre_it_list)} SHP files were loaded. "
+                print(f"\n{len(pre_it_list)} input files were loaded. "
                       "Finding Generalized Nodes...")
                 for i in pre_it_list:
                     k = gprf(i)
@@ -297,14 +295,31 @@ elif args.mode == 'N':
     coords_list_df = coords_list_df.drop(['lon', 'lat'], axis=1)
 
     # Saving SHP output file
-    coords_list_gdf = gpgdf(coords_list_df)
-    output_file = Path(args.shp_file)
-    output_file.parent.mkdir(exist_ok=True, parents=True)
-    # This sets the CRS of the SHP file:
-    # Maybe add an option to let the user assign a custom one?
-    coords_list_gdf.set_crs(crs="EPSG:4326", inplace=True)
-    coords_list_gdf.to_file(f"{output_file}.shp", driver='ESRI Shapefile') # type: ignore
-    print(f"\nGeneralized nodes were saved to {args.shp_file}.shp")
+    coords_list_gdf = gpgdf(coords_list_df, crs="EPSG:4326")
+    
+    if args.output_format == "gpkg" or args.output_format is None:
+        fileext = "gpkg"
+        ofile = os.path.join(args.output_fd + '.' + fileext)
+        os.makedirs(os.path.dirname(ofile), exist_ok=True)
+        coords_list_gdf.to_file(ofile, driver="GPKG")
+
+    elif args.output_format == "geojson":
+        fileext = "geojson"
+        ofile = os.path.join(args.output_fd + '.' + fileext)
+        os.makedirs(os.path.dirname(ofile), exist_ok=True)
+        coords_list_gdf.to_file(filename=ofile, driver="GeoJSON")
+    
+    elif args.output_format == "shp":
+        fileext = "shp"
+        ofile = os.path.join(args.output_fd + '.' + fileext)
+        os.makedirs(os.path.dirname(ofile), exist_ok=True)
+        coords_list_gdf.to_file(filename=ofile, driver="ESRI Shapefile")
+ 
+    #output_fd = Path(args.output_fd)
+    #output_fd.parent.mkdir(exist_ok=True, parents=True)
+    #coords_list_gdf.set_crs(crs="EPSG:4326", inplace=True)
+    #coords_list_gdf.to_file(f"{output_fd}.shp", driver='ESRI Shapefile')
+    print(f"\nGeneralized nodes were saved to {args.output_fd}.{fileext}")
     print("\nEND")
 
 elif args.version:
