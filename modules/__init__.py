@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 vertices = []
 graph = []
 vertices_n = 0

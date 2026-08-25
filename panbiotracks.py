@@ -86,13 +86,14 @@ if len(sys.argv)==1:
     parser.exit()
 args = parser.parse_args()
 
-if args.mode == 'I':
+#if args.mode == 'I':
+def individual_tracks(inputcsv, outputdir, outputformat):
     # INDIVIDUAL TRACKS METHOD
     # Opening CSV file and deleting duplicate records
-    print(f"\n{len(args.input)} CSV file was loaded. "
+    print(f"\n{len(inputcsv)} CSV file was loaded. "
           "Building Individual Tracks...")
     
-    for i in args.input:
+    for i in inputcsv:
         with open(i) as fo:
             df = pdreadcsv(fo, header=0, dtype={'lat': float, 'lon': float})
             df.drop_duplicates(inplace=True)
@@ -138,39 +139,43 @@ if args.mode == 'I':
             #shpw(f"{args.output_fd}/{filename}") <- Deprecated function.
             it = gpds(MultiLineString(edge_list), crs="epsg:4326")
             
-            if args.output_format == "gpkg" or args.output_format is None:
+            if outputformat == "gpkg" or outputformat is None:
                 fileext = "gpkg"
-                ofile = os.path.join(args.output_fd, filename + '.' + fileext)
+                ofile = os.path.join(outputdir, filename + '.' + fileext)
                 os.makedirs(os.path.dirname(ofile), exist_ok=True)
                 it.to_file(ofile, driver="GPKG")
 
-            elif args.output_format == "geojson":
+            elif outputformat == "geojson":
                 fileext = "geojson"
-                ofile = os.path.join(args.output_fd, filename + '.' + fileext)
+                ofile = os.path.join(outputdir, filename + '.' + fileext)
                 os.makedirs(os.path.dirname(ofile), exist_ok=True)
                 it.to_file(ofile, driver="GeoJSON")
             
-            elif args.output_format == "shp":
+            elif outputformat == "shp":
                 fileext = "shp"
-                ofile = os.path.join(args.output_fd, filename + '.' + fileext)
+                ofile = os.path.join(outputdir, filename + '.' + fileext)
                 os.makedirs(os.path.dirname(ofile), exist_ok=True)
                 it.to_file(ofile, driver="ESRI Shapefile")
 
             print(f"The individual track was saved to "
-            f"{args.output_fd}/{filename}.{fileext}")
+            f"{outputdir}/{filename}.{fileext}")
             print("\nEND")
 
 
 # INTERNAL GENERALIZED TRACKS METHOD
-elif args.mode == 'P':
+#elif args.mode == 'P':
+def generalized_tracks(inputfiles, outputfile, outputformat):
     # Global list of input files' paths
+    #global edges
+    global edge_list
+    global coords_list
     gp_it_list = []
     
     # Check lenght of input to determine if there's a wildcard:
-    if len(args.input) < 2:
-        for item in args.input:
+    if len(inputfiles) < 2:
+        for item in inputfiles:
             if item.find('*') > -1:
-                pre_it_list = glob.glob(args.input.pop(0))
+                pre_it_list = glob.glob(inputfiles.pop(0))
                 print(f"\n{len(pre_it_list)} input files were loaded. "
                       "Building Internal Generalized Track...")
                 for i in pre_it_list:
@@ -182,9 +187,9 @@ elif args.mode == 'P':
                       "after the '-i' option and try again.")
                 sys.exit()
     else:
-        print(f"\n{len(args.input)} SHP files were loaded. "
+        print(f"\n{len(inputfiles)} input files were loaded. "
               "Building Internal Generalized Track...")
-        for i in args.input:
+        for i in inputfiles:
             k = gprf(i)
             gp_it_list.append(k)
 
@@ -199,7 +204,7 @@ elif args.mode == 'P':
             coords_list = [*coords_list, *nodes_coord_list]
 
     # Making dataframe
-    coords_list_df = pddf(coords_list, columns=['lon', 'lat'])
+    coords_list_df = pddf(coords_list, columns=["lon", "lat"])
     coords_list_df = coords_list_df[['lat', 'lon']]
 
     # Adding vertices
@@ -220,8 +225,8 @@ elif args.mode == 'P':
 
     # Making tuples of points to trace edges.
     coords = coords_list_df.to_numpy()
-    edges = nparr(edges, dtype=np32)
-    for e in edges:
+    edges_arr = nparr(edges, dtype=np32)
+    for e in edges_arr:
         i, j = e
         edge_list.append([(coords[i, 1], coords[i, 0]),
         (coords[j, 1], coords[j, 0])])
@@ -230,53 +235,70 @@ elif args.mode == 'P':
     # Saving the MST shapefile
     it = gpds(MultiLineString(edge_list), crs="epsg:4326")
     
-    if args.output_format == "gpkg" or args.output_format is None:
+    if outputformat == "gpkg" or outputformat is None:
         fileext = "gpkg"
-        ofile = os.path.join(args.output_fd + '.' + fileext)
+        ofile = os.path.join(outputfile + '.' + fileext)
         os.makedirs(os.path.dirname(ofile), exist_ok=True)
         it.to_file(ofile, driver="GPKG")
 
-    elif args.output_format == "geojson":
+    elif outputformat == "geojson":
         fileext = "geojson"
-        ofile = os.path.join(args.output_fd + '.' + fileext)
+        ofile = os.path.join(outputfile + '.' + fileext)
         os.makedirs(os.path.dirname(ofile), exist_ok=True)
         it.to_file(ofile, driver="GeoJSON")
     
-    elif args.output_format == "shp":
+    elif outputformat == "shp":
         fileext = "shp"
-        ofile = os.path.join(args.output_fd + '.' + fileext)
+        ofile = os.path.join(outputfile + '.' + fileext)
         os.makedirs(os.path.dirname(ofile), exist_ok=True)
         it.to_file(ofile, driver="ESRI Shapefile")
 
-    print(f"\nThe internal generalized track was saved to {args.output_fd}.{fileext}")
+    print(f"\nThe internal generalized track was saved to {outputfile}.{fileext}")
     print("\nEND")
 
-elif args.mode == 'N':
-    # NODES METHOD
+
+# GENERALIZED NODES METHOD
+#elif args.mode == 'N':
+def gen_nodes(inputfiles, outputfile, outputformat):
     # Global list of generalized tracks
+    global coords_list
     gt_gp_list = []
     
     # Check lenght of input to determine if there's a wildcard:
-    if len(args.input) < 2:
-        for item in args.input:
+    if len(inputfiles) < 2:
+        for item in inputfiles:
             if item.find('*') > -1:
-                pre_it_list = glob.glob(args.input.pop(0))
+                pre_it_list = glob.glob(inputfiles.pop(0))
                 print(f"\n{len(pre_it_list)} input files were loaded. "
                       "Finding Generalized Nodes...")
                 for i in pre_it_list:
                     k = gprf(i)
-                    gt_gp_list.append(k)
+                    if k.geom_type[0] == "MultiLineString":
+                        gt_gp_list.append(k)
+                    else:
+                        print("\nERROR: Some or all of the loaded files "
+                        "already contain generalized or panbiogeographic nodes."
+                        " Check your list of input files and make sure that "
+                        "you are loading only generalized track files.")
+                        sys.exit()
             else:
                 print("\nERROR: Panbiotracks needs more than 1 input file "
                       "to perform this function. Add 2 or more files "
                       "after the '-i' flag and try again.")
                 sys.exit()
     else:
-        print(f"\n{len(args.input)} SHP files were loaded. "
+        print(f"\n{len(inputfiles)} SHP files were loaded. "
               "Finding Generalized Nodes...")
-        for i in args.input:
+        for i in inputfiles:
             k = gprf(i)
-            gt_gp_list.append(k)
+            if k.geom_type[0] == "MultiLineString":
+                gt_gp_list.append(k)
+            else:
+                print("\nERROR: Some or all of the loaded files "
+                "already contain generalized or panbiogeographic nodes."
+                " Check your list of input files and make sure that "
+                "you are loading only generalized track files.")
+                sys.exit()
 
     # Finding intersections
     for a, b in itcomb(gt_gp_list, 2):
@@ -297,21 +319,21 @@ elif args.mode == 'N':
     # Saving SHP output file
     coords_list_gdf = gpgdf(coords_list_df, crs="EPSG:4326")
     
-    if args.output_format == "gpkg" or args.output_format is None:
+    if outputformat == "gpkg" or outputformat is None:
         fileext = "gpkg"
-        ofile = os.path.join(args.output_fd + '.' + fileext)
+        ofile = os.path.join(outputfile + '.' + fileext)
         os.makedirs(os.path.dirname(ofile), exist_ok=True)
         coords_list_gdf.to_file(ofile, driver="GPKG")
 
-    elif args.output_format == "geojson":
+    elif outputformat == "geojson":
         fileext = "geojson"
-        ofile = os.path.join(args.output_fd + '.' + fileext)
+        ofile = os.path.join(outputfile + '.' + fileext)
         os.makedirs(os.path.dirname(ofile), exist_ok=True)
         coords_list_gdf.to_file(filename=ofile, driver="GeoJSON")
     
-    elif args.output_format == "shp":
+    elif outputformat == "shp":
         fileext = "shp"
-        ofile = os.path.join(args.output_fd + '.' + fileext)
+        ofile = os.path.join(outputfile + '.' + fileext)
         os.makedirs(os.path.dirname(ofile), exist_ok=True)
         coords_list_gdf.to_file(filename=ofile, driver="ESRI Shapefile")
  
@@ -319,16 +341,28 @@ elif args.mode == 'N':
     #output_fd.parent.mkdir(exist_ok=True, parents=True)
     #coords_list_gdf.set_crs(crs="EPSG:4326", inplace=True)
     #coords_list_gdf.to_file(f"{output_fd}.shp", driver='ESRI Shapefile')
-    print(f"\nGeneralized nodes were saved to {args.output_fd}.{fileext}")
+    print(f"\nGeneralized nodes were saved to {outputfile}.{fileext}")
     print("\nEND")
 
-elif args.version:
-    print(f"Panbiotracks {args.version}")
-    sys.exit()
+def main(workmode, i, o, of):
+    if workmode == "I":
+        individual_tracks(i, o, of)
+    elif workmode == "P":
+        generalized_tracks(i, o, of)
+    elif workmode == "N":
+        gen_nodes(i, o, of)
+    
+    elif args.version:
+        print(f"Panbiotracks {args.version}")
+        sys.exit()
 
-elif args == None:
-    sys.exit()
+    else:
+        print(f"{workmode} is not a valid option. Please use '-m I', "
+            "'-m P' or '-m N', or use '-h' for help.")
 
-else:
-    print(f"{args.mode} is not a valid option. Please use '-m I', "
-          "'-m P' or '-m N', or use '-h' for help.")
+if __name__ == '__main__':
+    mode = args.mode
+    input = args.input
+    output = args.output_fd
+    output_format = args.output_format
+    main(mode, input, output, output_format)

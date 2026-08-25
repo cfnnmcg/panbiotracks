@@ -1,15 +1,18 @@
-from shapefile import Writer
+#!/usr/bin/env python3
 
-from modules import edge_list, graph, vertices, vertices_n
+#from shapefile import Writer
 
+from modules import graph, vertices  #, vertices_n
+
+vertices_n = 0
 
 def add_vertex(v):
     """
     Adds vertices to an adjacency matrix, as many as locations are in the CSV.
     """
-    global graph
+    # global graph
     global vertices_n
-    global vertices
+    # global vertices
 
     if v in vertices:
         print("Vertex ", v, "already exists.")
@@ -28,9 +31,9 @@ def add_edge(v1, v2, e):
     """
     Adds edges and their weight (lenght) to the adjacency matrix.
     """
-    global graph
-    global vertices_n
-    global vertices
+    # global graph
+    # global vertices_n
+    # global vertices
     # Check if vertex v1 is a valid vertex
     if v1 not in vertices:
         print("Vertex ", v1, " does not exists.")
@@ -58,12 +61,11 @@ def prim_algorithm(V, graph, edges_list):
         for i in range(V):
             if selected[i]:
                 for j in range(V):
-                    if ((not selected[j]) and graph[i][j]):  
+                    if ((not selected[j]) and graph[i][j] and minimum > graph[i][j]):  
                         # not in selected and there is an edge
-                        if minimum > graph[i][j]:
-                            minimum = graph[i][j]
-                            x = i
-                            y = j
+                        minimum = graph[i][j]
+                        x = i
+                        y = j
         print(str(x) + "-" + str(y) + " : " + str(graph[x][y]))
         selected[y] = True
         no_edge += 1
@@ -79,13 +81,13 @@ def nodes_intersect(n1, n2):
         index_parts = True).droplevel(0)
     return inex
 
-def shp_writer(f):
-    '''
-    A simple function that uses a list of edges to write a SHP file.
-    '''
-    global edge_list
-    w = Writer(f)
-    w.line(edge_list)
-    w.field("COMMON_ID", 'C')
-    w.record("Point")
-    w.close()
+# def shp_writer(f):
+#     '''
+#     A simple function that uses a list of edges to write a SHP file.
+#     '''
+#     global edge_list
+#     w = Writer(f)
+#     w.line(edge_list)
+#     w.field("COMMON_ID", 'C')
+#     w.record("Point")
+#     w.close()
