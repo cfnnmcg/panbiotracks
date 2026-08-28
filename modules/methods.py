@@ -8,8 +8,6 @@ from geopandas import GeoSeries as gpds
 from geopandas import read_file as gprf
 from numpy import array as nparr
 from numpy import int32 as np32
-from pandas import DataFrame as pddf
-from pandas import read_csv as pdreadcsv
 from shapely.geometry import MultiLineString, Point
 from vincenty import vincenty_inverse as vc
 
@@ -26,14 +24,18 @@ def individual_tracks(inputcsv, outputdir, outputformat):
     """
 
     # Opening CSV file and deleting duplicate records
-    print(f"\n{len(inputcsv)} CSV file was loaded. "
+    print(f"\n{len(inputcsv)} CSV file(s) loaded. "
           "Building Individual Tracks...")
     
     for i in inputcsv:
-        with open(i) as fo:
-            df = pdreadcsv(fo, header=0, dtype={'lat': float, 'lon': float})
-            df.drop_duplicates(inplace=True)
-            list_df = [g for n,g in df.groupby('species')]
+        # with open(i) as fo:
+        #     df = pdreadcsv(fo, header=0, dtype={'lat': float, 'lon': float})
+        #     df.drop_duplicates(inplace=True)
+        #     list_df = [g for n,g in df.groupby('species')]
+
+        gdf = gprf(i)
+        gdf.drop_duplicates(inplace=True)
+        list_df = [g for _,g in gdf.groupby('species')]
 
         # Iterating over each dataframe:
         for dfi in list_df:
@@ -50,6 +52,7 @@ def individual_tracks(inputcsv, outputdir, outputformat):
                 add_vertex(r)
 
             # Adding edges and their weight (lenght) to the adjacency matrix:
+            dfi[['lat', 'lon']] = dfi[['lat', 'lon']].astype('float64')
             df_list = dfi[['lat', 'lon']].values.tolist()
             for i in range(len(df_list)):
                 for j in range(len(df_list)):
@@ -71,8 +74,7 @@ def individual_tracks(inputcsv, outputdir, outputformat):
                 edge_list.append([(coords[i, 2], coords[i, 1]),
                 (coords[j, 2], coords[j, 1])])
 
-            # Saving the MST to a SHP file:
-            #shpw(f"{args.output_fd}/{filename}") <- Deprecated function.
+            # Saving output file:
             it = gpds(MultiLineString(edge_list), crs="epsg:4326")
             
             if outputformat == "gpkg" or outputformat is None:
@@ -154,7 +156,7 @@ def generalized_tracks(inputfiles, outputfile, outputformat):
             coords_list = [*coords_list, *nodes_coord_list]
 
     # Making dataframe
-    coords_list_df = pddf(coords_list, columns=["lon", "lat"])
+    coords_list_df = gpgdf(coords_list, columns=["lon", "lat"])
     coords_list_df = coords_list_df[['lat', 'lon']]
 
     # Adding vertices
@@ -182,7 +184,7 @@ def generalized_tracks(inputfiles, outputfile, outputformat):
         (coords[j, 1], coords[j, 0])])
     edge_list = sorted(edge_list)
 
-    # Saving the MST shapefile
+    # Saving output file
     it = gpds(MultiLineString(edge_list), crs="epsg:4326")
     
     if outputformat == "gpkg" or outputformat is None:
@@ -262,15 +264,12 @@ def gen_nodes(inputfiles, outputfile, outputformat):
                 nodes_list.geometry.y.astype(float)))
             coords_list = [*coords_list, *nodes_coord_list]
 
-    # Making list of coordinates
-    coords_list_df = pddf(coords_list, columns=['lon', 'lat'])
-    coords_list_df['geometry'] = (
-        coords_list_df.apply(lambda x: Point(x.lon, x.lat), axis=1))
-    coords_list_df = coords_list_df.drop(['lon', 'lat'], axis=1)
-
-    # Saving SHP output file
-    coords_list_gdf = gpgdf(coords_list_df, crs="EPSG:4326")
+    # Creating GeoDataframe to export
+    c = [Point(coord[0], coord[1]) for coord in coords_list]
+    coords_list_gdf = gpgdf(coords_list, columns=['lon', 'lat'], geometry=c, crs="EPSG:4326")
+    coords_list_gdf = coords_list_gdf.drop(['lon', 'lat'], axis=1)
     
+    # Saving output file
     if outputformat == "gpkg" or outputformat is None:
         fileext = "gpkg"
         ofile = os.path.join(outputfile + '.' + fileext)
@@ -289,9 +288,5 @@ def gen_nodes(inputfiles, outputfile, outputformat):
         os.makedirs(os.path.dirname(ofile), exist_ok=True)
         coords_list_gdf.to_file(filename=ofile, driver="ESRI Shapefile")
  
-    #output_fd = Path(args.output_fd)
-    #output_fd.parent.mkdir(exist_ok=True, parents=True)
-    #coords_list_gdf.set_crs(crs="EPSG:4326", inplace=True)
-    #coords_list_gdf.to_file(f"{output_fd}.shp", driver='ESRI Shapefile')
     print(f"\nGeneralized nodes were saved to {outputfile}.{fileext}")
     print("\nCOMPLETED")
