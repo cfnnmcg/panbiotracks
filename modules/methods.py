@@ -95,7 +95,7 @@ def individual_tracks(inputcsv, outputdir, outputformat):
 
             print(f"The individual track was saved to "
             f"{outputdir}/{filename}.{fileext}")
-            print("\nEND")
+            print("\nCOMPLETED")
 
 def generalized_tracks(inputfiles, outputfile, outputformat):
     """
@@ -116,18 +116,32 @@ def generalized_tracks(inputfiles, outputfile, outputformat):
                       "Building Internal Generalized Track...")
                 for i in pre_it_list:
                     k = gprf(i)
-                    gp_it_list.append(k)
+                    if k.geom_type[0] == "MultiLineString":
+                        gp_it_list.append(k)
+                    else:
+                        print("\nERROR: Some or all of the loaded files "
+                        "contain generalized or panbiogeographic nodes."
+                        " Check your list of input files and make sure that "
+                        "you are loading only individual track files.")
+                        sys.exit()
             else:
                 print("\nERROR: Panbiotracks needs more than 1 input file "
                       "to perform this function. Add 2 or more files "
-                      "after the '-i' option and try again.")
+                      "after the '-i' flag and try again.")
                 sys.exit()
     else:
         print(f"\n{len(inputfiles)} input files were loaded. "
               "Building Internal Generalized Track...")
         for i in inputfiles:
             k = gprf(i)
-            gp_it_list.append(k)
+            if k.geom_type[0] == "MultiLineString":
+                gp_it_list.append(k)
+            else:
+                print("\nERROR: Some or all of the loaded files "
+                "contain generalized or panbiogeographic nodes."
+                " Check your list of input files and make sure that "
+                "you are loading only individual track files.")
+                sys.exit()
 
     # Making intersections
     for a, b in itcomb(gp_it_list, 2):
@@ -190,7 +204,7 @@ def generalized_tracks(inputfiles, outputfile, outputformat):
         it.to_file(ofile, driver="ESRI Shapefile")
 
     print(f"\nThe internal generalized track was saved to {outputfile}.{fileext}")
-    print("\nEND")
+    print("\nCOMPLETED")
 
 def gen_nodes(inputfiles, outputfile, outputformat):
     """
@@ -280,4 +294,4 @@ def gen_nodes(inputfiles, outputfile, outputformat):
     #coords_list_gdf.set_crs(crs="EPSG:4326", inplace=True)
     #coords_list_gdf.to_file(f"{output_fd}.shp", driver='ESRI Shapefile')
     print(f"\nGeneralized nodes were saved to {outputfile}.{fileext}")
-    print("\nEND")
+    print("\nCOMPLETED")
