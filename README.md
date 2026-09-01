@@ -12,7 +12,7 @@ It has three main functions:
 
 *Panbiotracks* is a self-contained executable that can be run as is, without installation. Go to the [Releases page](https://github.com/cfnnmcg/panbiotracks/releases) and download the appropriate file according to your operating system.
 
-Once downloaded, go to the directory where you saved the executable and open it from a terminal window, like GNOME terminal, macOS Terminal or Windows Terminal or PowerShell. Please refer to the [Wiki](https://github.com/cfnnmcg/panbiotracks/wiki) for a more detailed explanation and usage examples.
+Once downloaded, go to the directory where you saved the executable and open it from a terminal window, like GNOME Terminal, macOS Terminal or Windows Terminal or PowerShell. Please refer to the [Wiki](https://github.com/cfnnmcg/panbiotracks/wiki) for a more detailed explanation and usage examples.
 
 ## Basic usage
 
