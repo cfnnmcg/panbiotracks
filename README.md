@@ -26,7 +26,7 @@ To see the basic help, type:
 panbiotracks -h
 ```
 
-To check Panbiotracks version, run:
+To check the software version, run:
 
 ```bash
 panbiotracks -v
