@@ -14,7 +14,11 @@
 #import sys
 import argparse
 import sys
+from itertools import combinations as itcomb
 
+from geopandas import read_file as gprf
+
+from modules.functions import grouper
 from modules.methods import gen_nodes, generalized_tracks, individual_tracks
 
 #from modules.functions import shp_writer as shpw
@@ -24,10 +28,12 @@ parser = argparse.ArgumentParser(prog = 'Panbiotracks',
                                  description='Panbiotracks - ' \
                                  'Options, input and output files.')
 parser.add_argument('-m', '--mode',
-                    choices=['I', 'P', 'N'],
+                    choices=['I', 'P', 'N', 'G'],
                     help="Set the operation mode: 'I' for individual "
                     "tracks. 'P' for internal generalized tracks. "
                     "'N' for generalized nodes."
+                    "'G' is an experimental function to group ITs before "
+                    "the construction of IGTs."
                     )
 parser.add_argument('-i', '--input',
                     nargs='+',
@@ -79,6 +85,14 @@ def main(workmode, i, o, of):
         generalized_tracks(i, o, of)
     elif workmode == "N":
         gen_nodes(i, o, of)
+    elif workmode == "G":
+        it_list = []
+        for n in i:
+            k = gprf(n)
+            # AGREGAR AQUÍ EL CAMBIO DE CRS
+            it_list.append(k)
+        for n, m in itcomb(it_list, 2):
+            grouper(n, m)
     
     elif args.version:
         print(f"Panbiotracks {args.version}")

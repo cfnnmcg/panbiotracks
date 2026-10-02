@@ -91,3 +91,15 @@ def nodes_intersect(n1, n2):
 #     w.field("COMMON_ID", 'C')
 #     w.record("Point")
 #     w.close()
+
+def grouper(track1, track2):
+    """
+    Groups tracks by comparing their distances and similarity.
+    """
+    d = track1.distance(track2)
+    cd = track1.centroid.distance(track2)
+    hd = track1.hausdorff_distance(track2)
+    # AGREGAR CAMBIO DE NOMBRE EN FUNCIÓN DE LA ESPECIE (POR NOMBRE DE ARCHIVO)
+    print(f"d {track1}-{track2}: {d}")
+    print(f"cd {track1}-{track2}: {cd}")
+    print(f"hd {track1}-{track2}: {hd}")
