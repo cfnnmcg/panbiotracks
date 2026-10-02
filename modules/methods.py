@@ -79,20 +79,19 @@ def individual_tracks(inputcsv, outputdir, outputformat):
             
             if outputformat == "gpkg" or outputformat is None:
                 fileext = "gpkg"
-                ofile = os.path.join(outputdir, filename + '.' + fileext)
-                os.makedirs(os.path.dirname(ofile), exist_ok=True)
-                it.to_file(ofile, driver="GPKG")
-
             elif outputformat == "gjs":
                 fileext = "geojson"
-                ofile = os.path.join(outputdir, filename + '.' + fileext)
-                os.makedirs(os.path.dirname(ofile), exist_ok=True)
-                it.to_file(ofile, driver="GeoJSON")
-            
             elif outputformat == "shp":
                 fileext = "shp"
-                ofile = os.path.join(outputdir, filename + '.' + fileext)
-                os.makedirs(os.path.dirname(ofile), exist_ok=True)
+
+            ofile = os.path.join(outputdir, filename + '.' + fileext)
+            os.makedirs(os.path.dirname(ofile), exist_ok=True)
+
+            if fileext == "gpkg":    
+                it.to_file(ofile, driver="GPKG")
+            elif fileext == "geojson":
+                it.to_file(ofile, driver="GeoJSON")
+            elif fileext == "shp":
                 it.to_file(ofile, driver="ESRI Shapefile")
 
             print(f"The individual track was saved to "
@@ -189,20 +188,19 @@ def generalized_tracks(inputfiles, outputfile, outputformat):
     
     if outputformat == "gpkg" or outputformat is None:
         fileext = "gpkg"
-        ofile = os.path.join(outputfile + '.' + fileext)
-        os.makedirs(os.path.dirname(ofile), exist_ok=True)
-        it.to_file(ofile, driver="GPKG")
-
     elif outputformat == "gjs":
         fileext = "geojson"
-        ofile = os.path.join(outputfile + '.' + fileext)
-        os.makedirs(os.path.dirname(ofile), exist_ok=True)
-        it.to_file(ofile, driver="GeoJSON")
-    
     elif outputformat == "shp":
         fileext = "shp"
-        ofile = os.path.join(outputfile + '.' + fileext)
-        os.makedirs(os.path.dirname(ofile), exist_ok=True)
+
+    ofile = os.path.join(outputfile + '.' + fileext)
+    os.makedirs(os.path.dirname(ofile), exist_ok=True)
+    
+    if fileext == "gpkg":
+        it.to_file(ofile, driver="GPKG")
+    elif fileext == "geojson":
+        it.to_file(ofile, driver="GeoJSON")
+    elif fileext == "shp":
         it.to_file(ofile, driver="ESRI Shapefile")
 
     print(f"\nThe internal generalized track was saved to {outputfile}.{fileext}")
@@ -272,20 +270,19 @@ def gen_nodes(inputfiles, outputfile, outputformat):
     # Saving output file
     if outputformat == "gpkg" or outputformat is None:
         fileext = "gpkg"
-        ofile = os.path.join(outputfile + '.' + fileext)
-        os.makedirs(os.path.dirname(ofile), exist_ok=True)
-        coords_list_gdf.to_file(ofile, driver="GPKG")
-
     elif outputformat == "gjs":
         fileext = "geojson"
-        ofile = os.path.join(outputfile + '.' + fileext)
-        os.makedirs(os.path.dirname(ofile), exist_ok=True)
-        coords_list_gdf.to_file(filename=ofile, driver="GeoJSON")
-    
     elif outputformat == "shp":
         fileext = "shp"
-        ofile = os.path.join(outputfile + '.' + fileext)
-        os.makedirs(os.path.dirname(ofile), exist_ok=True)
+
+    ofile = os.path.join(outputfile + '.' + fileext)
+    os.makedirs(os.path.dirname(ofile), exist_ok=True)
+        
+    if fileext == "gpkg":
+        coords_list_gdf.to_file(ofile, driver="GPKG")
+    if fileext == "geojson":
+        coords_list_gdf.to_file(filename=ofile, driver="GeoJSON")
+    if fileext == "shp":
         coords_list_gdf.to_file(filename=ofile, driver="ESRI Shapefile")
  
     print(f"\nGeneralized nodes were saved to {outputfile}.{fileext}")
