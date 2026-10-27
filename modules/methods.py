@@ -135,6 +135,9 @@ def generalized_tracks(inputfiles, outputfile, outputformat):
               "Building Internal Generalized Track...")
         for i in inputfiles:
             k = gprf(i)
+            # This part check if each file has a MultiLineString geometry.
+            # Check how to search for the geom type along all of the lenght
+            # of the file.
             if k.geom_type[0] == "MultiLineString":
                 gp_it_list.append(k)
             else:
@@ -287,3 +290,46 @@ def gen_nodes(inputfiles, outputfile, outputformat):
  
     print(f"\nGeneralized nodes were saved to {outputfile}.{fileext}")
     print("\nCOMPLETED")
+
+def grouper(inputfiles):
+    """
+    Groups tracks by comparing their distances and similarity.
+    """
+    it_list = []
+    if len(inputfiles) < 2:
+        for item in inputfiles:
+            if item.find('*') > -1:
+                pre_it_list = glob.glob(inputfiles.pop(0))
+                print(f"\n{len(pre_it_list)} input files were loaded.")
+                for i in pre_it_list:
+                    k = gprf(i)
+                    if k.geom_type[0] == "MultiLineString":
+                        it_list.append(k)
+                    else:
+                        print("\nERROR: Some or all of the loaded files "
+                        "contain generalized or panbiogeographic nodes."
+                        " Check your list of input files and make sure that "
+                        "you are loading only individual track files.")
+                        sys.exit()
+            else:
+                print("\nERROR: Panbiotracks needs more than 1 input file "
+                      "to perform this function. Add 2 or more files "
+                      "after the '-i' flag and try again.")
+                sys.exit()
+    else:
+        print(f"\n{len(inputfiles)} input files were loaded.")
+        for i in inputfiles:
+            k = gprf(i)
+            # This part check if each file has a MultiLineString geometry.
+            # Check how to search for the geom type along all of the lenght
+            # of the file.
+            if k.geom_type[0] == "MultiLineString":
+                it_list.append(k)
+            else:
+                print("\nERROR: Some or all of the loaded files "
+                "contain generalized or panbiogeographic nodes."
+                " Check your list of input files and make sure that "
+                "you are loading only individual track files.")
+                sys.exit()
+    
+    print(len(it_list))

@@ -2,6 +2,8 @@
 
 #from shapefile import Writer
 
+import numpy as np
+
 from modules import graph, vertices  #, vertices_n
 
 vertices_n = 0
@@ -81,25 +83,29 @@ def nodes_intersect(n1, n2):
         index_parts = True).droplevel(0)
     return inex
 
-# def shp_writer(f):
-#     '''
-#     A simple function that uses a list of edges to write a SHP file.
-#     '''
-#     global edge_list
-#     w = Writer(f)
-#     w.line(edge_list)
-#     w.field("COMMON_ID", 'C')
-#     w.record("Point")
-#     w.close()
+def mls_coords(geom):
+    """Return all vertices of a Shapely MultiLineString as an (N, 2) array."""
+    coords = []
+    for line in geom.geoms:
+        coords.extend(line.coords)
+    return np.asarray(coords, dtype=float)
 
-def grouper(track1, track2):
+def principal_axis(geom):
     """
-    Groups tracks by comparing their distances and similarity.
+    Return the unit vector of the first principal component
+    of a MultiLineString geometry.
     """
-    d = track1.distance(track2)
-    cd = track1.centroid.distance(track2)
-    hd = track1.hausdorff_distance(track2)
-    # AGREGAR CAMBIO DE NOMBRE EN FUNCIÓN DE LA ESPECIE (POR NOMBRE DE ARCHIVO)
-    print(f"d {track1}-{track2}: {d}")
-    print(f"cd {track1}-{track2}: {cd}")
-    print(f"hd {track1}-{track2}: {hd}")
+    xy = mls_coords(geom)
+    if len(xy) < 2:
+        raise ValueError("A geometry has fewer than two vertices.")
+    xy_centered = xy - xy.mean(axis=0)
+    _, _, vt = np.linalg.svd(xy_centered, full_matrices=False)
+    axis = vt[0]
+    return axis / np.linalg.norm(axis)
+
+def orientation_distance(axis_i, axis_j):
+    """
+    Return orientation dissimilarity. Ignores direction.
+    """
+    cosine = np.dot(axis_i, axis_j)
+    return 1.0 - abs(cosine)

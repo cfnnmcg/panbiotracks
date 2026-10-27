@@ -14,12 +14,8 @@
 #import sys
 import argparse
 import sys
-from itertools import combinations as itcomb
 
-from geopandas import read_file as gprf
-
-from modules.functions import grouper
-from modules.methods import gen_nodes, generalized_tracks, individual_tracks
+from modules.methods import gen_nodes, generalized_tracks, grouper, individual_tracks
 
 #from modules.functions import shp_writer as shpw
 
@@ -86,13 +82,7 @@ def main(workmode, i, o, of):
     elif workmode == "N":
         gen_nodes(i, o, of)
     elif workmode == "G":
-        it_list = []
-        for n in i:
-            k = gprf(n)
-            # AGREGAR AQUÍ EL CAMBIO DE CRS
-            it_list.append(k)
-        for n, m in itcomb(it_list, 2):
-            grouper(n, m)
+        grouper(i)
     
     elif args.version:
         print(f"Panbiotracks {args.version}")
