@@ -103,7 +103,7 @@ def principal_axis(geom):
     axis = vt[0]
     return axis / np.linalg.norm(axis)
 
-def orientation_distance(axis_i, axis_j):
+def orientation_similarity(axis_i, axis_j):
     """
     Return orientation dissimilarity. Ignores direction.
     """

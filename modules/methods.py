@@ -2,6 +2,7 @@ import glob
 import os
 import sys
 from itertools import combinations as itcomb
+from pathlib import Path
 
 from geopandas import GeoDataFrame as gpgdf
 from geopandas import GeoSeries as gpds
@@ -304,6 +305,8 @@ def grouper(inputfiles):
                 for i in pre_it_list:
                     k = gprf(i)
                     if k.geom_type[0] == "MultiLineString":
+                        flnm = Path(i).stem
+                        k["taxon"] = flnm
                         it_list.append(k)
                     else:
                         print("\nERROR: Some or all of the loaded files "
@@ -324,6 +327,8 @@ def grouper(inputfiles):
             # Check how to search for the geom type along all of the lenght
             # of the file.
             if k.geom_type[0] == "MultiLineString":
+                flnm = Path(i).stem
+                k["taxon"] = flnm
                 it_list.append(k)
             else:
                 print("\nERROR: Some or all of the loaded files "
@@ -332,4 +337,4 @@ def grouper(inputfiles):
                 "you are loading only individual track files.")
                 sys.exit()
     
-    print(len(it_list))
+    return it_list
