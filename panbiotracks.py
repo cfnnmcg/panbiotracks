@@ -71,18 +71,18 @@ if len(sys.argv)==1:
     parser.exit()
 args = parser.parse_args()
 
-def main(workmode, i, o, of):
+def main(workmode, input, output, of):
     """
     It checks the selected work mode and calls the appropriate function.
     """
     if workmode == "I":
-        individual_tracks(i, o, of)
+        individual_tracks(input, output, of)
     elif workmode == "P":
-        generalized_tracks(i, o, of)
+        generalized_tracks(input, output, of)
     elif workmode == "N":
-        gen_nodes(i, o, of)
+        gen_nodes(input, output, of)
     elif workmode == "G":
-        grouper(i)
+        grouper(input)
     
     elif args.version:
         print(f"Panbiotracks {args.version}")

@@ -9,11 +9,17 @@ from geopandas import GeoSeries as gpds
 from geopandas import read_file as gprf
 from numpy import array as nparr
 from numpy import int32 as np32
+from numpy import quantile as qt
 from shapely.geometry import MultiLineString, Point
 from vincenty import vincenty_inverse as vc
 
 from modules import coords_list, edge_list, edges, graph, vertices
-from modules.functions import add_edge, add_vertex
+from modules.functions import (
+    add_edge,
+    add_vertex,
+    orientation_similarity,
+    principal_axis,
+)
 from modules.functions import nodes_intersect as ni
 from modules.functions import prim_algorithm as prim
 
@@ -36,6 +42,7 @@ def individual_tracks(inputcsv, outputdir, outputformat):
 
         gdf = gprf(i)
         gdf.drop_duplicates(inplace=True)
+        # TO DO: ADD FUNCTION TO REMOVE TAXA WITH LESS THAN 2 ROWS.
         list_df = [g for _,g in gdf.groupby('species')]
 
         # Iterating over each dataframe:
@@ -304,10 +311,16 @@ def grouper(inputfiles):
                 print(f"\n{len(pre_it_list)} input files were loaded.")
                 for i in pre_it_list:
                     k = gprf(i)
-                    if k.geom_type[0] == "MultiLineString":
+                    if (k.geom_type[0] == "MultiLineString" and
+                    len(k.geometry.iloc[0].geoms) >= 1):
                         flnm = Path(i).stem
                         k["taxon"] = flnm
+                        # TO DO: ADD OPTION SO THE USER CAN CHOOSE THE CRS.
+                        k =k.to_crs(4087)
                         it_list.append(k)
+                    elif (k.geom_type[0] == "MultiLineString" and
+                    len(k.geometry.iloc[0].geoms) < 1):
+                        continue
                     else:
                         print("\nERROR: Some or all of the loaded files "
                         "contain generalized or panbiogeographic nodes."
@@ -326,15 +339,58 @@ def grouper(inputfiles):
             # This part check if each file has a MultiLineString geometry.
             # Check how to search for the geom type along all of the lenght
             # of the file.
-            if k.geom_type[0] == "MultiLineString":
+            if (k.geom_type[0] == "MultiLineString" and
+                len(k.geometry.iloc[0].geoms) > 1):
                 flnm = Path(i).stem
                 k["taxon"] = flnm
+                k =k.to_crs(4087)
                 it_list.append(k)
+            elif (k.geom_type[0] == "MultiLineString" and
+            len(k.geometry.iloc[0].geoms) < 1):
+                        continue
             else:
                 print("\nERROR: Some or all of the loaded files "
                 "contain generalized or panbiogeographic nodes."
                 " Check your list of input files and make sure that "
                 "you are loading only individual track files.")
                 sys.exit()
-    
-    return it_list
+
+    hd_list = [
+        i.hausdorff_distance(j)[0]
+        for i, j in itcomb(it_list, 2)
+    ]
+
+    cd_list = [
+        i.centroid.distance(j.centroid)[0]
+        for i, j in itcomb(it_list, 2)
+    ]
+
+    hd_list_scaled = [
+        (n - min(hd_list)) / (max(hd_list) - min(hd_list))
+        for n in hd_list
+    ]
+
+    principal_axes = [
+        principal_axis(it.geometry.iloc[0])
+        for it in it_list
+    ]
+
+    for (idx_i, i), (idx_j, j) in itcomb(list(enumerate(it_list)), 2):
+        d = i.distance(j)
+        cd = i.centroid.distance(j.centroid)
+        hd_s = (i.hausdorff_distance(j) - min(hd_list)) / (max(hd_list) - min(hd_list))
+
+        # UGLY THING
+        od = orientation_similarity(
+            principal_axes[idx_i],
+            principal_axes[idx_j]
+        )
+        
+        orientation_threshold = 0.1
+
+        if (d[0] == 0 and
+        cd[0] < qt(cd_list, 0.2) and
+        # CHECK IF hd_list_scaled IS MEANINGFUL OR IF hd_list COULD BE BETTER
+        hd_s[0] < qt(hd_list_scaled, 0.2) and
+        od < orientation_threshold):
+            print(f"{i['taxon']}-{j['taxon']} ✅ CONGRUENTES")
