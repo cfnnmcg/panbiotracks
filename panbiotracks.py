@@ -15,9 +15,19 @@
 import argparse
 import sys
 
-from modules.methods import gen_nodes, generalized_tracks, grouper, individual_tracks
+from modules.methods import (
+    gen_nodes,
+    generalized_tracks,
+    geometric_similarity,
+    individual_tracks,
+)
 
-#from modules.functions import shp_writer as shpw
+
+def check_positive(value):
+    ivalue = float(value)
+    if (ivalue < 0 or ivalue > 1):
+        raise argparse.ArgumentTypeError(f"{value} is an invalid positive int value")
+    return ivalue
 
 # Define program arguments
 parser = argparse.ArgumentParser(prog = 'Panbiotracks',
@@ -28,8 +38,8 @@ parser.add_argument('-m', '--mode',
                     help="Set the operation mode: 'I' for individual "
                     "tracks. 'P' for internal generalized tracks. "
                     "'N' for generalized nodes."
-                    "'G' is an experimental function to group ITs before "
-                    "the construction of IGTs."
+                    "'G' is an experimental function to find geometric "
+                    "congruence between ITs."
                     )
 parser.add_argument('-i', '--input',
                     nargs='+',
@@ -82,7 +92,7 @@ def main(workmode, input, output, of):
     elif workmode == "N":
         gen_nodes(input, output, of)
     elif workmode == "G":
-        grouper(input)
+        geometric_similarity(input)
     
     elif args.version:
         print(f"Panbiotracks {args.version}")

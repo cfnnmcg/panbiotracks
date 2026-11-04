@@ -299,7 +299,7 @@ def gen_nodes(inputfiles, outputfile, outputformat):
     print(f"\nGeneralized nodes were saved to {outputfile}.{fileext}")
     print("\nCOMPLETED")
 
-def grouper(inputfiles):
+def geometric_similarity(inputfiles, cdt=0.1, hdt=0.1, fdt=0.1, ot=0.1):
     """
     Groups tracks by comparing their distances and similarity.
     """
@@ -308,7 +308,8 @@ def grouper(inputfiles):
         for item in inputfiles:
             if item.find('*') > -1:
                 pre_it_list = glob.glob(inputfiles.pop(0))
-                print(f"\n{len(pre_it_list)} input files were loaded.")
+                print(f"\n{len(pre_it_list)} input files were loaded. "
+                "Computing geometric congruence...\n")
                 for i in pre_it_list:
                     k = gprf(i)
                     if (k.geom_type[0] == "MultiLineString" and
@@ -333,7 +334,8 @@ def grouper(inputfiles):
                       "after the '-i' flag and try again.")
                 sys.exit()
     else:
-        print(f"\n{len(inputfiles)} input files were loaded.")
+        print(f"\n{len(inputfiles)} input files were loaded. "
+        "Computing geometric congruence...\n")
         for i in inputfiles:
             k = gprf(i)
             # This part check if each file has a MultiLineString geometry.
@@ -355,8 +357,18 @@ def grouper(inputfiles):
                 "you are loading only individual track files.")
                 sys.exit()
 
+    # d_list = [
+    #     i.distance(j)[0]
+    #     for i, j in itcomb(it_list, 2)
+    # ]
+    
     hd_list = [
         i.hausdorff_distance(j)[0]
+        for i, j in itcomb(it_list, 2)
+    ]
+
+    fd_list = [
+        i.frechet_distance(j)[0]
         for i, j in itcomb(it_list, 2)
     ]
 
@@ -370,6 +382,11 @@ def grouper(inputfiles):
         for n in hd_list
     ]
 
+    fd_list_scaled = [
+        (n - min(fd_list)) / (max(fd_list) - min(fd_list))
+        for n in fd_list
+    ]
+
     principal_axes = [
         principal_axis(it.geometry.iloc[0])
         for it in it_list
@@ -378,19 +395,20 @@ def grouper(inputfiles):
     for (idx_i, i), (idx_j, j) in itcomb(list(enumerate(it_list)), 2):
         d = i.distance(j)
         cd = i.centroid.distance(j.centroid)
-        hd_s = (i.hausdorff_distance(j) - min(hd_list)) / (max(hd_list) - min(hd_list))
+        hd_s = ((i.hausdorff_distance(j) - min(hd_list)) / 
+                        (max(hd_list) - min(hd_list)))
+        fd_s = ((i.frechet_distance(j) - min(fd_list)) / 
+                        (max(fd_list) - min(fd_list)))
 
         # UGLY THING
         od = orientation_similarity(
             principal_axes[idx_i],
             principal_axes[idx_j]
         )
-        
-        orientation_threshold = 0.1
 
         if (d[0] == 0 and
-        cd[0] < qt(cd_list, 0.2) and
-        # CHECK IF hd_list_scaled IS MEANINGFUL OR IF hd_list COULD BE BETTER
-        hd_s[0] < qt(hd_list_scaled, 0.2) and
-        od < orientation_threshold):
-            print(f"{i['taxon']}-{j['taxon']} ✅ CONGRUENTES")
+        cd[0] <= qt(cd_list, cdt) and
+        (hd_s[0] < qt(hd_list_scaled, hdt) or
+        fd_s[0] < qt(fd_list_scaled, fdt)) and
+        od <= ot):
+            print(f"{i['taxon'][0]}-{j['taxon'][0]} ✅ CONGRUENTES")

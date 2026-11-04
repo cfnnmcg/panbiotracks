@@ -109,5 +109,3 @@ def orientation_similarity(axis_i, axis_j):
     """
     cosine = np.dot(axis_i, axis_j)
     return 1.0 - abs(cosine)
-
-    
