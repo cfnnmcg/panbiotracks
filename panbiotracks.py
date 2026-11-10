@@ -26,7 +26,8 @@ from modules.methods import (
 def check_positive(value):
     ivalue = float(value)
     if (ivalue < 0 or ivalue > 1):
-        raise argparse.ArgumentTypeError(f"{value} is an invalid positive int value")
+        raise argparse.ArgumentTypeError(f"{value} is an invalid value. "
+        "Threshold value must be a float number between 0 and 1.")
     return ivalue
 
 # Define program arguments
@@ -35,6 +36,7 @@ parser = argparse.ArgumentParser(prog = 'Panbiotracks',
                                  'Options, input and output files.')
 parser.add_argument('-m', '--mode',
                     choices=['I', 'P', 'N', 'G'],
+                    required=True,
                     help="Set the operation mode: 'I' for individual "
                     "tracks. 'P' for internal generalized tracks. "
                     "'N' for generalized nodes."
@@ -43,6 +45,7 @@ parser.add_argument('-m', '--mode',
                     )
 parser.add_argument('-i', '--input',
                     nargs='+',
+                    required=True,
                     help="Input file or files. "
                     "In individual tracks mode, it must be a single CSV file "
                     "with three columns: species, lat (Latitude) and "
