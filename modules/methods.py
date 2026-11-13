@@ -300,7 +300,7 @@ def gen_nodes(inputfiles, outputfile, outputformat):
     print(f"\nGeneralized nodes were saved to {outputfile}.{fileext}")
     print("\nCOMPLETED")
 
-def geometric_similarity(inputfiles, cdt=0.1, hdt=0.1, ot=0.05):
+def geometric_similarity(inputfiles, hdt, cdt, ot):
     """
     Groups tracks by comparing their distances and similarity.
     """
@@ -310,7 +310,8 @@ def geometric_similarity(inputfiles, cdt=0.1, hdt=0.1, ot=0.05):
             if item.find('*') > -1:
                 pre_it_list = glob.glob(inputfiles.pop(0))
                 print(f"\n{len(pre_it_list)} input files were loaded. "
-                "Computing geometric congruence...\n")
+                "Computing geometric congruence...\n"
+                "The following pairs of individual tracks are congruent:\n")
                 for i in pre_it_list:
                     k = gprf(i)
                     if (k.geom_type[0] == "MultiLineString" and
@@ -336,7 +337,8 @@ def geometric_similarity(inputfiles, cdt=0.1, hdt=0.1, ot=0.05):
                 sys.exit()
     else:
         print(f"\n{len(inputfiles)} input files were loaded. "
-        "Computing geometric congruence...\n")
+        "Computing geometric congruence...\n"
+        "The following pairs of individual tracks are congruent:\n")
         for i in inputfiles:
             k = gprf(i)
             # This part check if each file has a MultiLineString geometry.
@@ -380,4 +382,4 @@ def geometric_similarity(inputfiles, cdt=0.1, hdt=0.1, ot=0.05):
         hd_s[0] < qt(hd_scaled, hdt) and #or
         #fd_s[0] < qt(fd_scaled, fdt)) and
         od <= ot):
-            print(f"{i['taxon'][0]}-{j['taxon'][0]} ✅ CONGRUENTES")
+            print(f"✅ {i['taxon'][0]}-{j['taxon'][0]}")

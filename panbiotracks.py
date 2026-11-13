@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Panbiotracks v. 0.3.0
+# Panbiotracks v. 0.4.0
 # (c) Carlos Fernando Castillo-García, Universidad Nacional Autónoma de México
 # 2023-2026
 
@@ -24,90 +24,157 @@ from modules.methods import (
 
 
 def check_positive(value):
-    ivalue = float(value)
-    if (ivalue < 0 or ivalue > 1):
+    try:
+        value = float(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            f"{value} is an invalid value. It must be a decimal number "
+            "between 0 and 1."
+        )
+    if (value < 0.0 or value > 1.0):
         raise argparse.ArgumentTypeError(f"{value} is an invalid value. "
-        "Threshold value must be a float number between 0 and 1.")
-    return ivalue
+        "Threshold value must be a decimal number between 0 and 1.")
+    return value
 
 # Define program arguments
 parser = argparse.ArgumentParser(prog = 'Panbiotracks',
                                  description='Panbiotracks - ' \
                                  'Options, input and output files.')
-parser.add_argument('-m', '--mode',
-                    choices=['I', 'P', 'N', 'G'],
-                    required=True,
-                    help="Set the operation mode: 'I' for individual "
-                    "tracks. 'P' for internal generalized tracks. "
-                    "'N' for generalized nodes."
-                    "'G' is an experimental function to find geometric "
-                    "congruence between ITs."
-                    )
-parser.add_argument('-i', '--input',
+subparsers = parser.add_subparsers(
+    dest="mode",
+    required=True,
+    metavar="MODE"
+)
+
+parser_i = subparsers.add_parser("I",
+                    help="Builds individual tracks from a list of geographic "
+                    "coordinates.")
+parser_i.add_argument('-i', '--input', required=True,
                     nargs='+',
-                    required=True,
-                    help="Input file or files. "
-                    "In individual tracks mode, it must be a single CSV file "
-                    "with three columns: species, lat (Latitude) and "
-                    "lon (Longitude), in that order. "
-                    "For internal generalized tracks and generalized nodes, it "
-                    "must be a set of at least two files in the GeoPackage, "
-                    "GeoJSON, or SHP formats, separated by a space each. "
-                    "It is possible to use a path with a wildcard to process "
-                    "all of the files present within a directory "
-                    "(i. e. /path/to/files/*.shp)."
-                    )
-parser.add_argument('-o', '--output',
-                    dest='output_fd', 
-                    help="For individual tracks, the output is the directory "
-                    "where the resulting file or files will be saved. If the "
-                    "directory don't exists, it will be created recursively. "
-                    "For internal generalized tracks and generalized nodes, "
-                    "the output is the name of the resulting file or files, "
-                    "without file extension."
-                    )
-parser.add_argument('-of', '--output_format',
+                    help="A single CSV file with three columns: "
+                    "species, lat (latitude) and lon (longitude), "
+                    "in that order.")
+parser_i.add_argument('-o', '--output', required=True,
+                    dest='output_fd',
+                    help="Path and name of the destination folder.")
+parser_i.add_argument('-of', '--output_format',
                     choices=['gpkg', 'gjs', 'shp'],
                     help="Optional. Specifies the output file format. "
                     "Use gpkg for GeoPackage, gjs for GeoJSON, "
                     "or shp for ESRI Shapefile. "
                     "If this argument is not used, Panbiotracks will save the "
-                    "resulting tracks and nodes in the GeoPackage format."
-                    )
+                    "resulting tracks and nodes in the GeoPackage format.")
+
+parser_p = subparsers.add_parser("P",
+                    help="Builds an internal generalized track from a set "
+                    "of individual tracks.")
+parser_p.add_argument('-i', '--input', required=True,
+                    nargs='+',
+                    help="Input files. "
+                    "A set of at least two files in the GeoPackage, "
+                    "GeoJSON, or SHP formats, separated by a space each. "
+                    "It is possible to use a path with a wildcard to process "
+                    "all of the files present within a directory "
+                    "(i. e. /path/to/files/*.shp).")
+parser_p.add_argument('-o', '--output', required=True,
+                    dest='output_fd',
+                    help="Path and name of the destination file, "
+                    "without file extension.")
+parser_p.add_argument('-of', '--output_format',
+                    choices=['gpkg', 'gjs', 'shp'],
+                    help="Optional. Specifies the output file format. "
+                    "Use gpkg for GeoPackage, gjs for GeoJSON, "
+                    "or shp for ESRI Shapefile. "
+                    "If this argument is not used, Panbiotracks will save the "
+                    "resulting tracks and nodes in the GeoPackage format.")
+
+parser_n = subparsers.add_parser("N",
+                    help="Builds a set of generalized nodes from a set of "
+                    "generalized or internal generalized tracks.")
+parser_n.add_argument('-i', '--input', required=True,
+                    nargs='+',
+                    help="Input files. "
+                    "A set of at least two files in the GeoPackage, "
+                    "GeoJSON, or SHP formats, separated by a space each. "
+                    "It is possible to use a path with a wildcard to process "
+                    "all of the files present within a directory "
+                    "(i. e. /path/to/files/*.shp).")
+parser_n.add_argument('-o', '--output', required=True,
+                    dest='output_fd',
+                    help="Path and name of the destination file, "
+                    "without file extension.")
+parser_n.add_argument('-of', '--output_format',
+                    choices=['gpkg', 'gjs', 'shp'],
+                    help="Optional. Specifies the output file format. "
+                    "Use gpkg for GeoPackage, gjs for GeoJSON, "
+                    "or shp for ESRI Shapefile. "
+                    "If this argument is not used, Panbiotracks will save the "
+                    "resulting tracks and nodes in the GeoPackage format.")
+
+parser_g = subparsers.add_parser("G",
+                    help="Experimental function to find geometric "
+                    "congruence between individual tracks.")
+parser_g.add_argument('-i', '--input', required=True,
+                    nargs='+',
+                    help="Input files. "
+                    "A set of at least two files in the GeoPackage, "
+                    "GeoJSON, or SHP formats, separated by a space each. "
+                    "It is possible to use a path with a wildcard to process "
+                    "all of the files present within a directory "
+                    "(i. e. /path/to/files/*.shp).")
+parser_g.add_argument('-st', '--similarity_threshold',
+                    type=check_positive,
+                    default=0.1,
+                    help="Similarity threshold. A decimal value from 0 to 1, "
+                    "where 0 equals to max similarity between tracks, and "
+                    "1 equals to max dissimilarity. The default value is 0.1.")
+parser_g.add_argument('-dt', '--distance_threshold',
+                    type=check_positive,
+                    default=0.1,
+                    help="Centroid threshold. A decimal value from 0 to 1, "
+                    "where 0 equals to min distance between tracks, and "
+                    "1 equals to max distance. The default value is 0.1.")
+parser_g.add_argument('-ot', '--orientation_threshold',
+                    type=check_positive,
+                    default=0.1,
+                    help="Orientation threshold. A decimal value from 0 to 1, "
+                    "where 0 means that track A and track B have the same "
+                    "orientation (they share the same angle), while 1 means "
+                    "they are perpendicular (they form a 90 degree angle). "
+                    "The default value is 0.1.")
+
 parser.add_argument('-v', '--version',
                     action='version',
-                    version='%(prog)s 0.3.0',
-                    help="Displays the program's version and exits.")
+                    version='%(prog)s 0.4.0',
+                    help="Display the program's version and exit.")
 if len(sys.argv)==1:
     parser.print_help()
     # parser.print_usage() # for just the usage line
     parser.exit()
 args = parser.parse_args()
 
-def main(workmode, input, output, of):
-    """
-    It checks the selected work mode and calls the appropriate function.
-    """
-    if workmode == "I":
-        individual_tracks(input, output, of)
-    elif workmode == "P":
-        generalized_tracks(input, output, of)
-    elif workmode == "N":
-        gen_nodes(input, output, of)
-    elif workmode == "G":
-        geometric_similarity(input)
+
+if __name__ == '__main__':
+    mode = args.mode
+    input = args.input
+
+    if mode == "I":
+        individual_tracks(input, args.output_fd, args.output_format)
+    elif mode == "P":
+        generalized_tracks(input, args.output_fd, args.output_format)
+    elif mode == "N":
+        gen_nodes(input, args.output_fd, args.output_format)
+    elif mode == "G":
+        st = args.similarity_threshold
+        dt = args.distance_threshold
+        ot = args.orientation_threshold
+        geometric_similarity(input, st, dt, ot)
     
     elif args.version:
         print(f"Panbiotracks {args.version}")
         sys.exit()
 
     else:
-        print(f"{workmode} is not a valid option. Please use '-m I', "
-            "'-m P' or '-m N', or use '-h' for help.")
-
-if __name__ == '__main__':
-    mode = args.mode
-    input = args.input
-    output = args.output_fd
-    output_format = args.output_format
-    main(mode, input, output, output_format)
+        print(f"{args.mode} is not a valid option. Please use 'I', "
+            "'P', 'N' or 'G'; or use '-h' to get help. For help for a "
+            "specific mode, use 'MODE -h'.")
