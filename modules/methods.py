@@ -17,8 +17,9 @@ from modules import coords_list, edge_list, edges, graph, vertices
 from modules.functions import (
     add_edge,
     add_vertex,
+    distance_lists,
+    list_scaler,
     orientation_similarity,
-    principal_axis,
 )
 from modules.functions import nodes_intersect as ni
 from modules.functions import prim_algorithm as prim
@@ -299,7 +300,7 @@ def gen_nodes(inputfiles, outputfile, outputformat):
     print(f"\nGeneralized nodes were saved to {outputfile}.{fileext}")
     print("\nCOMPLETED")
 
-def geometric_similarity(inputfiles, cdt=0.1, hdt=0.1, fdt=0.1, ot=0.1):
+def geometric_similarity(inputfiles, cdt=0.1, hdt=0.1, ot=0.05):
     """
     Groups tracks by comparing their distances and similarity.
     """
@@ -357,77 +358,26 @@ def geometric_similarity(inputfiles, cdt=0.1, hdt=0.1, fdt=0.1, ot=0.1):
                 "you are loading only individual track files.")
                 sys.exit()
 
-    d_list = [
-        i.distance(j)[0]
-        for i, j in itcomb(it_list, 2)
-    ]
+    hd_list, cd_list, principal_axes = distance_lists(it_list)
     
-    hd_list = [
-        i.hausdorff_distance(j)[0]
-        for i, j in itcomb(it_list, 2)
-    ]
-
-    fd_list = [
-        i.frechet_distance(j)[0]
-        for i, j in itcomb(it_list, 2)
-    ]
-
-    cd_list = [
-        i.centroid.distance(j.centroid)[0]
-        for i, j in itcomb(it_list, 2)
-    ]
-
-    # d_list_scaled = [
-    #     (n - min(d_list)) / (max(d_list) - min(d_list))
-    #     for n in d_list
-    # ]
-
-    hd_list_scaled = [
-        (n - min(hd_list)) / (max(hd_list) - min(hd_list))
-        for n in hd_list
-    ]
-
-    fd_list_scaled = [
-        (n - min(fd_list)) / (max(fd_list) - min(fd_list))
-        for n in fd_list
-    ]
-
-    cd_list_scaled = [
-        (n - min(cd_list)) / (max(cd_list) - min(cd_list))
-        for n in cd_list
-    ]
-
-    principal_axes = [
-        principal_axis(it.geometry.iloc[0])
-        for it in it_list
-    ]
+    hd_scaled, cd_scaled = list_scaler(hd_list, cd_list)
 
     for (idx_i, i), (idx_j, j) in itcomb(list(enumerate(it_list)), 2):
-        d_s = ((i.distance(j) - min(d_list)) /
-                        (max(d_list) - min(d_list)))
-        #print(f"d_s: {d_s[0]}")
-        #cd = i.centroid.distance(j.centroid)
+        d = i.distance(j)
+        # d_s = ((i.distance(j) - min(d_list)) /
+        #                 (max(d_list) - min(d_list)))
         cd_s = ((i.centroid.distance(j.centroid) - min(cd_list)) / 
                         (max(cd_list) - min(cd_list)))
-        #print(cd_s[0])
         hd_s = ((i.hausdorff_distance(j) - min(hd_list)) / 
                         (max(hd_list) - min(hd_list)))
-        #print(hd_s[0])
-        fd_s = ((i.frechet_distance(j) - min(fd_list)) / 
-                        (max(fd_list) - min(fd_list)))
-        #print(fd_s[0])
         od = orientation_similarity(
             principal_axes[idx_i],
             principal_axes[idx_j]
         )
-        #print(f"od: {od}")
 
-        S = d_s + cd_s + hd_s + od
-
-        if (d_s[0] == 0 and
-        cd_s[0] <= qt(cd_list_scaled, cdt) and
-        (hd_s[0] < qt(hd_list_scaled, hdt) or
-        fd_s[0] < qt(fd_list_scaled, fdt)) and
+        if (d[0] == 0 and
+        cd_s[0] <= qt(cd_scaled, cdt) and
+        hd_s[0] < qt(hd_scaled, hdt) and #or
+        #fd_s[0] < qt(fd_scaled, fdt)) and
         od <= ot):
             print(f"{i['taxon'][0]}-{j['taxon'][0]} ✅ CONGRUENTES")
-            print(S[0])
