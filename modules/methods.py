@@ -25,6 +25,40 @@ from modules.functions import nodes_intersect as ni
 from modules.functions import prim_algorithm as prim
 
 
+class TrackGroups:
+    def __init__(self):
+        self.parent = {}
+
+    def add(self, track):
+        if track not in self.parent:
+            self.parent[track] = track
+
+    def find(self, track):
+        self.add(track)
+        while self.parent[track] != track:
+            self.parent[track] = self.parent[self.parent[track]]
+            track = self.parent[track]
+
+        return track
+
+    def congruence(self, track_1, track_2):
+        root_1 = self.find(track_1)
+        root_2 = self.find(track_2)
+        if root_1 == root_2:
+            return
+
+        self.parent[root_2] = root_1
+
+    def clusters(self):
+        clusters = {}
+
+        for i in self.parent:
+            root = self.find(i)
+            clusters.setdefault(root, []).append(i)
+
+        return list(clusters.values())
+
+
 def individual_tracks(inputcsv, outputdir, outputformat):
     """
     Builds individual tracks from a CSV file and saves them as GeoPackage,
@@ -310,8 +344,7 @@ def geometric_similarity(inputfiles, hdt, cdt, ot):
             if item.find('*') > -1:
                 pre_it_list = glob.glob(inputfiles.pop(0))
                 print(f"\n{len(pre_it_list)} input files were loaded. "
-                "Computing geometric congruence...\n"
-                "The following pairs of individual tracks are congruent:\n")
+                "Computing geometric congruence...\n")
                 for i in pre_it_list:
                     k = gprf(i)
                     if (k.geom_type[0] == "MultiLineString" and
@@ -337,8 +370,7 @@ def geometric_similarity(inputfiles, hdt, cdt, ot):
                 sys.exit()
     else:
         print(f"\n{len(inputfiles)} input files were loaded. "
-        "Computing geometric congruence...\n"
-        "The following pairs of individual tracks are congruent:\n")
+        "Computing geometric congruence...\n")
         for i in inputfiles:
             k = gprf(i)
             # This part check if each file has a MultiLineString geometry.
@@ -364,10 +396,13 @@ def geometric_similarity(inputfiles, hdt, cdt, ot):
     
     hd_scaled, cd_scaled = list_scaler(hd_list, cd_list)
 
+    tg = TrackGroups()
+
+    print("\n=======================================================\n"
+        "The following pairs of individual tracks are congruent:\n")
+
     for (idx_i, i), (idx_j, j) in itcomb(list(enumerate(it_list)), 2):
         d = i.distance(j)
-        # d_s = ((i.distance(j) - min(d_list)) /
-        #                 (max(d_list) - min(d_list)))
         cd_s = ((i.centroid.distance(j.centroid) - min(cd_list)) / 
                         (max(cd_list) - min(cd_list)))
         hd_s = ((i.hausdorff_distance(j) - min(hd_list)) / 
@@ -382,4 +417,20 @@ def geometric_similarity(inputfiles, hdt, cdt, ot):
         hd_s[0] < qt(hd_scaled, hdt) and #or
         #fd_s[0] < qt(fd_scaled, fdt)) and
         od <= ot):
-            print(f"✅ {i['taxon'][0]}-{j['taxon'][0]}")
+            print(f"✅ {i['taxon'][0]} - {j['taxon'][0]}")
+
+            tg.congruence(i['taxon'][0], j['taxon'][0])
+
+    congruent_groups = tg.clusters()
+
+    congruent_groups = [sorted(g) for g in congruent_groups]
+    congruent_groups.sort(key=len, reverse= True)
+
+    print("\n=======================================================")
+    print("The following track groups were identified:")
+
+    for g_num, g in enumerate(congruent_groups, start=1):
+        print(f"\n🟣 Group {g_num} ({len(g)} tracks):")
+        for h in g:
+            print(f"🔹 {h}")
+        #print(", ".join(g))
