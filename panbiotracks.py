@@ -142,6 +142,14 @@ parser_g.add_argument('-ot', '--orientation_threshold',
                     "orientation (they share the same angle), while 1 means "
                     "they are perpendicular (they form a 90 degree angle). "
                     "The default value is 0.1.")
+parser_g.add_argument('-icrs',
+                    default=4087,
+                    dest='input_crs',
+                    help="Coordinate Reference System (CRS) to process "
+                    "the input files. The value can be anything accepted by "
+                    "PyProj. Se its documentation for more information."
+                    "The default value is the EPSG:4087 World Equidistant "
+                    "Cylindrical CRS.")
 
 parser.add_argument('-v', '--version',
                     action='version',
@@ -168,7 +176,8 @@ if __name__ == '__main__':
         st = args.similarity_threshold
         dt = args.distance_threshold
         ot = args.orientation_threshold
-        geometric_similarity(input, st, dt, ot)
+        icrs = args.input_crs
+        geometric_similarity(input, st, dt, ot, icrs)
     
     elif args.version:
         print(f"Panbiotracks {args.version}")

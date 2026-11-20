@@ -334,7 +334,7 @@ def gen_nodes(inputfiles, outputfile, outputformat):
     print(f"\nGeneralized nodes were saved to {outputfile}.{fileext}")
     print("\nCOMPLETED")
 
-def geometric_similarity(inputfiles, hdt, cdt, ot):
+def geometric_similarity(inputfiles, hdt, cdt, ot, crs):
     """
     Groups tracks by comparing their distances and similarity.
     """
@@ -352,7 +352,7 @@ def geometric_similarity(inputfiles, hdt, cdt, ot):
                         flnm = Path(i).stem
                         k["taxon"] = flnm
                         # TO DO: ADD OPTION SO THE USER CAN CHOOSE THE CRS.
-                        k =k.to_crs(4087)
+                        k =k.to_crs(crs)
                         it_list.append(k)
                     elif (k.geom_type[0] == "MultiLineString" and
                     len(k.geometry.iloc[0].geoms) < 1):
@@ -380,7 +380,7 @@ def geometric_similarity(inputfiles, hdt, cdt, ot):
                 len(k.geometry.iloc[0].geoms) > 1):
                 flnm = Path(i).stem
                 k["taxon"] = flnm
-                k =k.to_crs(4087)
+                k =k.to_crs(crs)
                 it_list.append(k)
             elif (k.geom_type[0] == "MultiLineString" and
             len(k.geometry.iloc[0].geoms) < 1):
