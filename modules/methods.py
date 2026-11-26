@@ -2,19 +2,61 @@ import glob
 import os
 import sys
 from itertools import combinations as itcomb
+from pathlib import Path
 
 from geopandas import GeoDataFrame as gpgdf
 from geopandas import GeoSeries as gpds
 from geopandas import read_file as gprf
 from numpy import array as nparr
 from numpy import int32 as np32
+from numpy import quantile as qt
 from shapely.geometry import MultiLineString, Point
 from vincenty import vincenty_inverse as vc
 
 from modules import coords_list, edge_list, edges, graph, vertices
-from modules.functions import add_edge, add_vertex
+from modules.functions import (
+    add_edge,
+    add_vertex,
+    distance_lists,
+    list_scaler,
+    orientation_similarity,
+)
 from modules.functions import nodes_intersect as ni
 from modules.functions import prim_algorithm as prim
+
+
+class TrackGroups:
+    def __init__(self):
+        self.parent = {}
+
+    def add(self, track):
+        if track not in self.parent:
+            self.parent[track] = track
+
+    def find(self, track):
+        self.add(track)
+        while self.parent[track] != track:
+            self.parent[track] = self.parent[self.parent[track]]
+            track = self.parent[track]
+
+        return track
+
+    def congruence(self, track_1, track_2):
+        root_1 = self.find(track_1)
+        root_2 = self.find(track_2)
+        if root_1 == root_2:
+            return
+
+        self.parent[root_2] = root_1
+
+    def clusters(self):
+        clusters = {}
+
+        for i in self.parent:
+            root = self.find(i)
+            clusters.setdefault(root, []).append(i)
+
+        return list(clusters.values())
 
 
 def individual_tracks(inputcsv, outputdir, outputformat):
@@ -35,6 +77,7 @@ def individual_tracks(inputcsv, outputdir, outputformat):
 
         gdf = gprf(i)
         gdf.drop_duplicates(inplace=True)
+        # TO DO: ADD FUNCTION TO REMOVE TAXA WITH LESS THAN 2 ROWS.
         list_df = [g for _,g in gdf.groupby('species')]
 
         # Iterating over each dataframe:
@@ -135,6 +178,9 @@ def generalized_tracks(inputfiles, outputfile, outputformat):
               "Building Internal Generalized Track...")
         for i in inputfiles:
             k = gprf(i)
+            # This part check if each file has a MultiLineString geometry.
+            # Check how to search for the geom type along all of the lenght
+            # of the file.
             if k.geom_type[0] == "MultiLineString":
                 gp_it_list.append(k)
             else:
@@ -287,3 +333,104 @@ def gen_nodes(inputfiles, outputfile, outputformat):
  
     print(f"\nGeneralized nodes were saved to {outputfile}.{fileext}")
     print("\nCOMPLETED")
+
+def geometric_similarity(inputfiles, hdt, cdt, ot, crs):
+    """
+    Groups tracks by comparing their distances and similarity.
+    """
+    it_list = []
+    if len(inputfiles) < 2:
+        for item in inputfiles:
+            if item.find('*') > -1:
+                pre_it_list = glob.glob(inputfiles.pop(0))
+                print(f"\n{len(pre_it_list)} input files were loaded. "
+                "Computing geometric congruence...\n")
+                for i in pre_it_list:
+                    k = gprf(i)
+                    if (k.geom_type[0] == "MultiLineString" and
+                    len(k.geometry.iloc[0].geoms) >= 1):
+                        flnm = Path(i).stem
+                        k["taxon"] = flnm
+                        # TO DO: ADD OPTION SO THE USER CAN CHOOSE THE CRS.
+                        k =k.to_crs(crs)
+                        it_list.append(k)
+                    elif (k.geom_type[0] == "MultiLineString" and
+                    len(k.geometry.iloc[0].geoms) < 1):
+                        continue
+                    else:
+                        print("\nERROR: Some or all of the loaded files "
+                        "contain generalized or panbiogeographic nodes."
+                        " Check your list of input files and make sure that "
+                        "you are loading only individual track files.")
+                        sys.exit()
+            else:
+                print("\nERROR: Panbiotracks needs more than 1 input file "
+                      "to perform this function. Add 2 or more files "
+                      "after the '-i' flag and try again.")
+                sys.exit()
+    else:
+        print(f"\n{len(inputfiles)} input files were loaded. "
+        "Computing geometric congruence...\n")
+        for i in inputfiles:
+            k = gprf(i)
+            # This part check if each file has a MultiLineString geometry.
+            # Check how to search for the geom type along all of the lenght
+            # of the file.
+            if (k.geom_type[0] == "MultiLineString" and
+                len(k.geometry.iloc[0].geoms) > 1):
+                flnm = Path(i).stem
+                k["taxon"] = flnm
+                k =k.to_crs(crs)
+                it_list.append(k)
+            elif (k.geom_type[0] == "MultiLineString" and
+            len(k.geometry.iloc[0].geoms) < 1):
+                        continue
+            else:
+                print("\nERROR: Some or all of the loaded files "
+                "contain generalized or panbiogeographic nodes."
+                " Check your list of input files and make sure that "
+                "you are loading only individual track files.")
+                sys.exit()
+
+    hd_list, cd_list, principal_axes = distance_lists(it_list)
+    
+    hd_scaled, cd_scaled = list_scaler(hd_list, cd_list)
+
+    tg = TrackGroups()
+
+    print("\n=======================================================\n"
+        "The following pairs of individual tracks are congruent:\n")
+
+    for (idx_i, i), (idx_j, j) in itcomb(list(enumerate(it_list)), 2):
+        d = i.distance(j)
+        cd_s = ((i.centroid.distance(j.centroid) - min(cd_list)) / 
+                        (max(cd_list) - min(cd_list)))
+        hd_s = ((i.hausdorff_distance(j) - min(hd_list)) / 
+                        (max(hd_list) - min(hd_list)))
+        od = orientation_similarity(
+            principal_axes[idx_i],
+            principal_axes[idx_j]
+        )
+
+        if (d[0] == 0 and
+        cd_s[0] <= qt(cd_scaled, cdt) and
+        hd_s[0] < qt(hd_scaled, hdt) and #or
+        #fd_s[0] < qt(fd_scaled, fdt)) and
+        od <= ot):
+            print(f"✅ {i['taxon'][0]} - {j['taxon'][0]}")
+
+            tg.congruence(i['taxon'][0], j['taxon'][0])
+
+    congruent_groups = tg.clusters()
+
+    congruent_groups = [sorted(g) for g in congruent_groups]
+    congruent_groups.sort(key=len, reverse= True)
+
+    print("\n=======================================================")
+    print("The following track groups were identified:")
+
+    for g_num, g in enumerate(congruent_groups, start=1):
+        print(f"\n🟣 Group {g_num} ({len(g)} tracks):")
+        for h in g:
+            print(f"🔹 {h}")
+        #print(", ".join(g))

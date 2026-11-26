@@ -2,6 +2,10 @@
 
 #from shapefile import Writer
 
+from itertools import combinations as itcomb
+
+import numpy as np
+
 from modules import graph, vertices  #, vertices_n
 
 vertices_n = 0
@@ -81,13 +85,63 @@ def nodes_intersect(n1, n2):
         index_parts = True).droplevel(0)
     return inex
 
-# def shp_writer(f):
-#     '''
-#     A simple function that uses a list of edges to write a SHP file.
-#     '''
-#     global edge_list
-#     w = Writer(f)
-#     w.line(edge_list)
-#     w.field("COMMON_ID", 'C')
-#     w.record("Point")
-#     w.close()
+def mls_coords(geom):
+    """Return all vertices of a Shapely MultiLineString as an (N, 2) array."""
+    coords = []
+    for line in geom.geoms:
+        coords.extend(line.coords)
+    return np.asarray(coords, dtype=float)
+
+def principal_axis(geom):
+    """
+    Return the unit vector of the first principal component
+    of a MultiLineString geometry.
+    """
+    xy = mls_coords(geom)
+    if len(xy) < 2:
+        raise ValueError("A geometry has fewer than two vertices.")
+    xy_centered = xy - xy.mean(axis=0)
+    _, _, vt = np.linalg.svd(xy_centered, full_matrices=False)
+    axis = vt[0]
+    return axis / np.linalg.norm(axis)
+
+def orientation_similarity(axis_i, axis_j):
+    """
+    Return orientation dissimilarity. Ignores direction.
+    """
+    cosine = np.dot(axis_i, axis_j)
+    return 1.0 - abs(cosine)
+
+def distance_lists(tracklist):
+    """
+    Returns a set of lists containing distance and similarity values.
+    """
+    #d_list = []
+    hd_list = []
+    cd_list = []
+    principal_axes = []
+
+    for i, j in itcomb(tracklist, 2):
+        #d_list.append((i.distance(j))[0])
+        hd_list.append((i.hausdorff_distance(j))[0])
+        cd_list.append((i.centroid.distance(j.centroid))[0])
+    
+    for it in tracklist:
+        principal_axes.append(principal_axis(it.geometry.iloc[0]))
+
+    return hd_list, cd_list, principal_axes
+
+def list_scaler(hdl, cdl):
+    """
+    Returns a set of lists with scaled values from 0 to 1
+    """
+    hd_scaled = [
+        (n - min(hdl)) / (max(hdl) - min(hdl))
+        for n in hdl
+    ]
+    cd_scaled = [
+        (n - min(cdl)) / (max(cdl) - min(cdl))
+        for n in cdl
+    ]
+    
+    return hd_scaled, cd_scaled
